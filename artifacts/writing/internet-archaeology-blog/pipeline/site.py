@@ -336,9 +336,14 @@ def _plate_caption(m: dict, mode: str, exhibit_no: int) -> str:
     if mode == "screenshot":
         ts = str(m.get("screenshot_timestamp", "") or "")
         fd = str(m.get("screenshot_fetched", "") or "")
+        # Nearest-capture renders whose timestamp could not be recovered from
+        # the redirect target are labeled as such -- never a made-up date.
+        cap = str(m.get("screenshot_capture_mode", "") or "")
         label = f"plate {exhibit_no:02d} -- screenshot: Wayback Machine"
         if ts:
             label += f", snapshot {ts}"
+        elif cap:
+            label += f", {cap}"
         if fd:
             label += f", fetched {fd}"
         label += ("; bytes actually retrieved from the Internet Archive for "
@@ -403,6 +408,8 @@ def _provenance_html(m: dict, exhibit_no: int, mode: str) -> str:
         illus = "screenshot -- Wayback Machine"
         if m.get("screenshot_timestamp"):
             illus += ", snapshot %s" % m["screenshot_timestamp"]
+        elif m.get("screenshot_capture_mode"):
+            illus += ", %s" % m["screenshot_capture_mode"]
         if m.get("screenshot_fetched"):
             illus += ", fetched %s" % m["screenshot_fetched"]
     else:

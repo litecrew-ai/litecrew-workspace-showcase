@@ -1981,3 +1981,40 @@ prior verification records (553/534/442).
 -   box chromium (gazette index over loopback -> valid 1024x640 png above the
 -   floor; closed loopback port -> browser error page rejected by the guards)
 
+### Run 2026-08-29 20:56:33
+
+- mode: verify -- 393 checks, ALL PASS
+- posts: 20; illustration modes: 0 screenshot, 20 generated (labels on every page)
+- mount diag: GET /artifacts/writing/internet-archaeology-blog/site without trailing slash -> HTTP 301 (a conforming server 301-redirects to the slash form; a rewriting server that does not is what breaks page-relative refs)
+- mode A ok: 31 internal refs answered 200 under /artifacts/writing/internet-archaeology-blog/site/ (default page-relative mode)
+- mode B ok: 31 prefix-absolute internal refs answered 200 under /site/ (path_prefix mode); rss links = base_url + prefix
+- mount test method: stdlib http.server on 127.0.0.1 ephemeral port, browser-like GETs (redirects followed), every internal href/src fetched; mode A rooted at the workspace root, mode B at a temp root with path_prefix=/site/
+- binary asset size report: no screenshot binaries stored
+- full per-check listing printed to stdout; this record carries section outcomes, methods, and all failures
+
+### Run 2026-08-29 20:57:00
+
+- mode: fix (blog-render-timeout-fix) -- render-stage repair after the second
+-   laptop run (17/20 cdx timestamps resolved, real archived html pre-checked
+-   for 15 subjects, every render dead: 45s wall kill, no file written)
+- render now carries chrome's own --timeout=30000 (vtb 10000, wall guard 75s,
+-   stderr tail in every failure line). Proven on this box's chromium 150 with
+-   a loopback stalled-subresource page: the vtb-only recipe never exits and
+-   writes no file (the operator's failure, reproduced); with --timeout the
+-   browser self-captures at ~timeout+1s and always writes a png (unroutable
+-   hosts too). Caveat, on the record: the timeout capture of a never-loading
+-   page is a blank 3301B frame on this chromium, the 24576B floor rejects
+-   it -- such subjects still degrade, now with chrome's 'Page load timed
+-   out' stderr line in the log instead of a silent kill
+- pre-check: http 503 -> 15s backoff + exactly one retry; inter-subject delay
+-   2s -> 4s (one laptop run drew five 503 challenge pages)
+- cdx misses (timeout, no status-200 row, open breaker) now render the
+-   nearest-capture form https://web.archive.org/web/2/<url>; timestamp
+-   recovered from the redirect target when possible, else the plate is
+-   labeled 'nearest capture' (additive screenshot_capture_mode field)
+- regression test added: 36 unit tests OK, incl. the stalled-page case; a
+-   scratch-tree with-browser rehearsal here (archive unreachable) degraded
+-   20/20 honestly with the breaker + fallback path exercised, bodies
+-   sha256-identical, exit 0; verify 393 checks ALL PASS. The real
+-   archived-page path remains laptop-only (web.archive.org unreachable here)
+

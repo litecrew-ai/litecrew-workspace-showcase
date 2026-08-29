@@ -182,8 +182,11 @@ published page (decision D11 in `docs/design.md`):
   `https://web.archive.org/web/<ts>/<original-url>`. The page then prints a
   visible label -- "screenshot: Wayback Machine, snapshot <ts>, fetched
   <date>" -- plus the provenance (subject URL, rendered URL, timestamp, fetch
-  date) in the post's front matter and PROVENANCE box. Stored binaries are
-  never clobbered; delete `assets/screenshots/<slug>.<ext>` to refetch one.
+  date) in the post's front matter and PROVENANCE box. When the render came
+  through the nearest-capture fallback and the redirect did not resolve to a
+  timestamp, the label says "nearest capture" instead of a date -- never an
+  invented one. Stored binaries are never clobbered; delete
+  `assets/screenshots/<slug>.<ext>` to refetch one.
 
   History, so nobody re-walks the dead end: the original implementation
   called the documented screenshot service
@@ -192,8 +195,20 @@ published page (decision D11 in `docs/design.md`):
   page for all 20 subjects** -- the service is dead, and the fetcher no
   longer calls it. The same run recorded CDX answering only 5 of 20 lookups
   inside 5s, which is why the CDX client now uses a 25s timeout, one retry,
-  a circuit breaker after repeated transport failures, and a ~2s
-  inter-subject delay.
+  a circuit breaker after repeated transport failures, and a ~4s
+  inter-subject delay (raised from 2s after one run drew five HTTP 503
+  challenge pages; the pre-check also backs off ~15s and retries once on a
+  503). A second laptop run the same day resolved 17/20 timestamps but lost
+  **every render** to a 45s wall kill: a `--virtual-time-budget`-only
+  invocation never fires a capture while a Wayback subresource is still
+  loading. The render now carries Chrome's own `--timeout` -- the browser
+  writes the screenshot when the budget expires regardless of load state,
+  and its stderr tail lands in the failure log (see the render recipe
+  below). One caveat is calibrated and honest: on the reference chromium
+  (150, new headless) the timeout capture of a never-loading page is a
+  blank frame, which the near-blank guard rejects -- such a subject still
+  degrades, but the log then says exactly that, with chrome's own
+  "Page load timed out" line, instead of a silent wall kill.
 - **Generated plates** are the procedural 760x420 "mini homepage" SVGs from
   `svgart.py`, seeded with a CRC32 of the slug (starfield, bevel frame,
   88x31 buttons, hit counter, barricade stripes), labeled "generated
@@ -213,11 +228,34 @@ copied into `site/assets/` by the builder like the stylesheet.
 ### Producing real screenshot plates (the operator / laptop run)
 
 The fetch stage needs a **headless-capable browser binary** on the machine
-that has egress to `web.archive.org`, plus ~25-45 minutes for 20 subjects
+that has egress to `web.archive.org`, plus ~20-50 minutes for 20 subjects
 (each subject: a CDX lookup allowed up to 25s plus one retry, an archived-page
-pre-check at 20s, a browser render allowed 45s, a 2s inter-subject pause;
-slow CDX lookups are the usual cost, and repeated transport failures trip a
-circuit breaker that skips straight to the nearest-capture form).
+pre-check at 20s that backs off ~15s and retries once on an HTTP 503
+challenge, a browser render bounded by Chrome's own 30s `--timeout` under a
+75s wall guard, and a 4s inter-subject pause; slow CDX lookups are the usual
+cost, and a CDX miss of any kind -- timeout, no status-200 row, or the
+circuit breaker after repeated transport failures -- falls back to Wayback's
+nearest-capture form `https://web.archive.org/web/2/<canonical-url>`, which
+Wayback redirects to the closest capture it has).
+
+The exact render invocation (constants in `pipeline/screenshots.py`;
+`WINDOW_SIZE` 1024x640, `VIRTUAL_TIME_BUDGET` 10000, `CHROME_TIMEOUT_MS`
+30000, `RENDER_TIMEOUT` 75s outer guard):
+
+    --headless=new --screenshot=<tmp>/shot.png --window-size=1024,640 \
+    --virtual-time-budget=10000 --timeout=30000 --hide-scrollbars \
+    --disable-gpu --no-first-run --no-default-browser-check \
+    --user-data-dir=<throwaway profile> <archived-page-url>
+
+Why both budgets: `--virtual-time-budget` settles timers but **never fires a
+capture while a network load is pending** (measured on the reference
+chromium against a page with one hanging subresource: no exit, no file,
+killed at the wall); `--timeout` is the mechanism that actually captures --
+the browser exits at ~timeout+1s and always writes the PNG. The 75s wall
+guard exists only for a browser that ignores the flag, and kills the process
+group. Chrome's stderr tail (last ~500 chars) rides along in every failure
+line, and a render captured at timeout is flagged in the log, so the next
+run diagnoses itself.
 
 Browser resolution order, printed as the first line of every run:
 
@@ -243,9 +281,12 @@ Notes for that run:
 - `--fetch-screenshots` already rebuilds the site at the end;
   `--rebuild-only` is included as an explicit, idempotent safety line.
 - Optional, before or after: `python3 -m unittest discover -s tests -v`
-  (offline unit tests for the URL construction, payload guards, browser
-  detection, front-matter editor, and scratch-build consistency; the two
-  local-render tests are skipped automatically when no browser exists).
+  (offline unit tests for the URL construction, the render flag set, the
+  503 backoff, payload guards, browser detection, front-matter editor, and
+  scratch-build consistency; the local-render tests -- including a
+  stalled-subresource regression case that reproduces the "never finished
+  loading" failure with a hanging loopback subresource -- are skipped
+  automatically when no browser exists).
 - Every stored plate survives four guards before it is written: the archived
   URL must answer HTTP 200 and look like a Wayback playback page, the render
   must be a PNG with exactly the 1024x640 window, and it must clear a

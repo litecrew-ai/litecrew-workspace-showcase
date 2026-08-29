@@ -182,13 +182,18 @@ def fetch_screenshots() -> int:
     Strategy is render-don't-fetch: the former web.archive.org/screenshot
     endpoint is dead (operator run 2026-08-29: HTTP 404 + an HTML error page
     for all 20 subjects). Each subject resolves a snapshot via hardened CDX
-    (25s timeout, one retry, 200-preference, circuit breaker), pre-checks the
-    playback URL, then renders it with a browser subprocess located through
-    $CHROME_BIN or a PATH probe. Every attempt lands in RESULT.md; failures
-    degrade the subject to the labeled generated plate. When no browser
-    binary exists the run degrades once, with the actionable message, and
-    touches no network at all. Post bodies are hash-checked before/after:
-    only front-matter fields may change.
+    (25s timeout, one retry, 200-preference, circuit breaker; a CDX miss of
+    any kind falls back to Wayback's nearest-capture /web/2/ form), pre-checks
+    the playback URL (HTTP 503 backed off ~15s and retried once), then renders
+    it with a browser subprocess located through $CHROME_BIN or a PATH probe.
+    The capture bound is Chrome's own --timeout (the laptop run of 2026-08-29
+    lost all 20 renders to a --virtual-time-budget-only invocation that never
+    reached load-complete); our 75s wall budget is only the outer guard and
+    chrome's stderr tail rides along in every failure line. Every attempt
+    lands in RESULT.md; failures degrade the subject to the labeled generated
+    plate. When no browser binary exists the run degrades once, with the
+    actionable message, and touches no network at all. Post bodies are
+    hash-checked before/after: only front-matter fields may change.
     """
     subjects = screenshots.load_subjects(SEED)
     posts = sorted(POSTS.glob("*.md"))
@@ -201,11 +206,11 @@ def fetch_screenshots() -> int:
     browser, browser_note = screenshots.find_browser()
     print(browser_note)
     log = [
-        "mode: fetch-screenshots (render strategy: resolve via CDX, then "
-        "screenshot https://web.archive.org/web/<ts>/<url> with a headless "
-        "browser; the former /screenshot/ endpoint returned 404 html for "
-        "every subject in the operator run of 2026-08-29 and is no longer "
-        "called)",
+        "mode: fetch-screenshots (render strategy: resolve via CDX (misses "
+        "fall back to the nearest-capture /web/2/ form), pre-check the "
+        "playback url (503 -> backoff + one retry), then screenshot it with "
+        "a headless browser; chrome's own --timeout is the capture bound, "
+        "the 75s wall budget is only the outer guard)",
         browser_note,
     ]
 
@@ -348,6 +353,11 @@ def verify() -> int:
                 if m.get("screenshot_timestamp"):
                     check(f"{m['slug']}: snapshot timestamp on the plate",
                           str(m["screenshot_timestamp"]) in txt)
+                if m.get("screenshot_capture_mode"):
+                    # A nearest-capture render with no recoverable timestamp
+                    # must be labeled as such, never dated by guesswork.
+                    check(f"{m['slug']}: nearest-capture label on the plate",
+                          str(m["screenshot_capture_mode"]) in txt)
                 if m.get("screenshot_archived_url"):
                     check(f"{m['slug']}: archived page url is a playback form",
                           str(m["screenshot_archived_url"]).startswith(

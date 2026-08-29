@@ -18,8 +18,12 @@ an HTML error page for all 20 subjects. The strategy here is therefore
      page) BEFORE spending a browser run on it;
   4. render that URL with a headless browser via subprocess (no Python
      packages): the binary comes from $CHROME_BIN or a probe of common
-     names/macOS bundles; the run is bounded at 45s wall time and killed as a
-     process group on timeout;
+     names/macOS bundles. The capture is bounded by Chrome's OWN
+     `--timeout=<ms>` (the browser writes the screenshot when the budget
+     expires even if the page never finishes loading -- the laptop run of
+     2026-08-29 proved a `--virtual-time-budget`-only invocation stalls
+     forever on Wayback pages). Our subprocess wall budget is only the outer
+     guard; the browser's stderr tail is reported so runs diagnose themselves;
   5. store the PNG only when the payload passes the layered guards (magic
      bytes, exact window dimensions, a non-trivial size floor calibrated
      against blank/error renders), then stamp the post front matter
@@ -42,6 +46,7 @@ import shutil
 import signal
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 from . import util
@@ -62,11 +67,26 @@ CDX_RETRIES = 1
 CDX_BREAK_AFTER = 4
 
 PRECHECK_TIMEOUT = 20.0     # archived page must answer before the browser runs
-RENDER_TIMEOUT = 45.0       # wall allowance for the browser process group
-INTER_SUBJECT_DELAY = 2.0   # politeness between subjects (503-rate-limit class)
+PRECHECK_503_BACKOFF = 15.0  # archive 503 challenge/rate limit: wait, retry once
+RENDER_TIMEOUT = 75.0       # outer guard ONLY; chrome self-captures at the
+                            # --timeout below and exits on its own (measured:
+                            # ~timeout + 1s). The guard exists for a browser
+                            # that ignores everything; it kills the process group.
+INTER_SUBJECT_DELAY = 4.0   # politeness between subjects (raised from 2.0 after
+                            # one laptop run drew five HTTP 503 challenge pages)
 
 WINDOW_SIZE = "1024,640"
-VIRTUAL_TIME_BUDGET = 15000
+VIRTUAL_TIME_BUDGET = 10000
+# The capture mechanism. Chrome's --timeout is a page-load timeout after which
+# the screenshot is written regardless of load state; --virtual-time-budget
+# alone NEVER fires a capture while a network load is pending (measured on this
+# box's chromium 150 against a stalled subresource: no exit, no file, killed at
+# the wall; with --timeout the browser exits at ~timeout+0.8s and always writes
+# the PNG). Caveat recorded with the calibration below: when load never
+# completes, the timeout capture is a BLANK frame -- the floor rejects it, so
+# the subject still degrades, but with chrome's "Page load timed out" stderr
+# line in the log instead of a silent wall kill.
+CHROME_TIMEOUT_MS = 30000
 
 # Payload guards. Calibration on this machine's chromium, 1024x640 headless:
 #   blank page (about:blank)          3301 bytes
@@ -140,9 +160,23 @@ def lookup_timestamp(url: str, timeout: float = CDX_TIMEOUT,
 
 def archived_page_url(url: str, timestamp: str | None = None) -> str:
     """The playback URL a browser renders: /web/<ts>/<original-url>. Without a
-    timestamp Wayback redirects to the nearest capture of any status."""
+    timestamp (CDX miss, open circuit breaker) the nearest-capture form
+    /web/2/<original-url> is used: Wayback redirects "2" (any pre-1996 value)
+    to the closest capture of any status, so the render is not skipped just
+    because the CDX index timed out."""
     ts = (timestamp or "").strip().strip("/")
-    return WAYBACK_WEB + (ts + "/" if ts else "") + url
+    return WAYBACK_WEB + (ts + "/" if ts else "2/") + url
+
+
+FINAL_TS_RE = re.compile(r"/web/(\d{14})/")
+
+
+def timestamp_from_final_url(url: str | None) -> str | None:
+    """Recover the real snapshot timestamp from the URL a nearest-capture
+    request landed on (after Wayback's redirect). None when the final URL
+    carries no 14-digit timestamp."""
+    m = FINAL_TS_RE.search(url or "")
+    return m.group(1) if m else None
 
 
 # ---------------------------------------------------------------------------
@@ -225,26 +259,38 @@ def validate_png(data: bytes | None) -> str:
     return ""
 
 
-def precheck_archived(url: str, timeout: float = PRECHECK_TIMEOUT
-                      ) -> tuple[bool, str]:
+def precheck_archived(url: str, timeout: float = PRECHECK_TIMEOUT,
+                      backoff_503: float = PRECHECK_503_BACKOFF
+                      ) -> tuple[bool, str, str | None]:
     """Confirm the render target is a live Wayback playback page first.
 
     Two guards for the price of one fetch: HTTP 200 (after redirects), and a
     body that references web.archive.org (the playback toolbar does). If the
     archive is unreachable we learn it here, fast, instead of hanging a
-    45s browser run; if the URL is not a playback page there is nothing to
-    render. Returns (ok, report).
+    75s browser run; if the URL is not a playback page there is nothing to
+    render. An HTTP 503 (the Internet Archive challenge / rate-limit page --
+    five of them hit one laptop run) is backed off and retried exactly once.
+    Returns (ok, report, final_url_after_redirects) -- the final URL is how a
+    nearest-capture form resolves to a real timestamp.
     """
-    body, status, ctype, err = util.fetch_bytes(url, timeout=timeout)
-    if err:
-        return False, f"archived page pre-check: {err}"
+    retried = False
+    for attempt in (1, 2):
+        body, status, ctype, final_url, err = util.fetch_follow(url, timeout=timeout)
+        if err:
+            return False, f"archived page pre-check: {err}", final_url
+        if status == 503 and attempt == 1:
+            time.sleep(max(0.0, backoff_503))
+            retried = True
+            continue
+        break
+    note = " (503; backed off and retried once)" if retried else ""
     if status != 200:
-        return False, f"archived page pre-check: HTTP {status}"
+        return False, (f"archived page pre-check: HTTP {status}{note}"), final_url
     if b"web.archive.org" not in (body or b""):
         return False, ("archived page pre-check: HTTP 200 but the body does "
-                       "not reference web.archive.org (not a playback page)")
-    return True, (f"archived page pre-check: HTTP 200, {len(body or b'')} "
-                  f"bytes {ctype or ''}".rstrip())
+                       "not reference web.archive.org (not a playback page)"), final_url
+    return True, (f"archived page pre-check: HTTP 200{note}, {len(body or b'')} "
+                  f"bytes {ctype or ''}".rstrip()), final_url
 
 
 def _kill_group(proc: subprocess.Popen) -> None:
@@ -263,33 +309,60 @@ def _kill_group(proc: subprocess.Popen) -> None:
         pass
 
 
+STDERR_TAIL_CHARS = 500  # chrome stderr kept in failure reports (diagnosability)
+
+
+def _stderr_tail(err: bytes | None, limit: int = STDERR_TAIL_CHARS) -> str:
+    """Last ~limit chars of chrome's stderr, whitespace-squeezed for the log."""
+    text = (err or b"")[-(limit * 4):].decode("utf-8", "replace")
+    return " ".join(text.split())[-limit:]
+
+
+def browser_cmd(browser: str, shot_path: Path, profile: Path, page_url: str,
+                chrome_timeout_ms: int = CHROME_TIMEOUT_MS) -> list[str]:
+    """The exact headless invocation, in one place: the README documents these
+    flags as invoked, the unit tests assert them without launching anything.
+
+    --timeout is the capture mechanism (see CHROME_TIMEOUT_MS); the window
+    size, hidden scrollbars, and GPU flags are unchanged from the recipe proven
+    on this machine's chromium."""
+    return [
+        browser,
+        "--headless=new",
+        f"--screenshot={shot_path}",
+        f"--window-size={WINDOW_SIZE}",
+        f"--virtual-time-budget={VIRTUAL_TIME_BUDGET}",
+        f"--timeout={chrome_timeout_ms}",
+        "--hide-scrollbars",
+        "--disable-gpu",
+        "--no-first-run",
+        "--no-default-browser-check",
+        f"--user-data-dir={profile}",
+        page_url,
+    ]
+
+
 def render_screenshot(browser: str, page_url: str,
-                      timeout: float = RENDER_TIMEOUT) -> tuple[bytes | None, str]:
+                      timeout: float = RENDER_TIMEOUT,
+                      chrome_timeout_ms: int = CHROME_TIMEOUT_MS
+                      ) -> tuple[bytes | None, str]:
     """Render page_url to PNG bytes with a headless browser. Stdlib only.
 
     The invocation is the one proven on this machine's chromium and documented
-    in the README. The PNG is captured to a temp path inside a throwaway
-    profile directory; on success the validated bytes are handed back for
-    storage. On timeout the whole process group is killed -- a browser pointed
-    at an unroutable host never exits by itself (measured: no file written
-    after 100s). Returns (png_bytes_or_None, report).
+    in the README: Chrome's own --timeout writes the screenshot when the budget
+    expires even on a page that never finishes loading (the laptop run of
+    2026-08-29 lost all 20 renders because a --virtual-time-budget-only
+    invocation never reached load-complete on Wayback). Our subprocess wall
+    budget is the outer guard; the browser's stderr tail rides along in every
+    failure report, and a "Page load timed out" stderr line is flagged on the
+    success path too (that capture is blank on this chromium and the payload
+    guards reject it -- the point is the run log says WHY).
+    Returns (png_bytes_or_None, report).
     """
     with tempfile.TemporaryDirectory(prefix="gazette-render-") as tmp:
         shot = Path(tmp) / "shot.png"
         profile = Path(tmp) / "profile"
-        cmd = [
-            browser,
-            "--headless=new",
-            f"--screenshot={shot}",
-            f"--window-size={WINDOW_SIZE}",
-            f"--virtual-time-budget={VIRTUAL_TIME_BUDGET}",
-            "--hide-scrollbars",
-            "--disable-gpu",
-            "--no-first-run",
-            "--no-default-browser-check",
-            f"--user-data-dir={profile}",
-            page_url,
-        ]
+        cmd = browser_cmd(browser, shot, profile, page_url, chrome_timeout_ms)
         try:
             proc = subprocess.Popen(
                 cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
@@ -301,18 +374,29 @@ def render_screenshot(browser: str, page_url: str,
             _, err = proc.communicate(timeout=timeout)
         except subprocess.TimeoutExpired:
             _kill_group(proc)
+            try:
+                _, err = proc.communicate(timeout=5)
+            except Exception:
+                err = b""
             return None, (
-                f"render: timed out after {timeout:.0f}s and wrote no file "
-                "(the archived page never finished loading)"
+                f"render: wall guard killed the process group after "
+                f"{timeout:.0f}s with no file (chrome never reached its own "
+                f"--timeout={chrome_timeout_ms}ms; a browser that ignores the "
+                f"flag is the suspect); chrome stderr tail: "
+                f"{_stderr_tail(err) or '(empty)'}"
             )
         if not shot.is_file():
-            tail = (err or b"")[-160:].decode("utf-8", "replace").strip()
             return None, (
                 f"render: browser exited {proc.returncode} without writing a "
-                f"file{'; ' + tail if tail else ''}"
+                f"file; chrome stderr tail: {_stderr_tail(err) or '(empty)'}"
             )
         data = shot.read_bytes()
-        return data, f"render: exit {proc.returncode}, {len(data)} bytes png"
+        stalled = b"Page load timed out" in (err or b"")
+        note = ("; captured at --timeout with load incomplete (chrome: Page "
+                "load timed out) -- expect the near-blank guard to reject this"
+                if stalled else "")
+        return data, (f"render: exit {proc.returncode}, {len(data)} bytes "
+                      f"png{note}")
 
 
 # ---------------------------------------------------------------------------
@@ -387,7 +471,7 @@ def attempt_subject(post_path: Path, subject: dict, shots_dir: Path,
     result = {
         "slug": slug, "canonical_url": None, "stored": None, "timestamp": None,
         "archived_url": None, "bytes": None, "illustration": "generated",
-        "note": [],
+        "capture_mode": None, "note": [],
     }
 
     existing = [e for e in IMAGE_EXTS if (shots_dir / f"{slug}{e}").exists()]
@@ -417,7 +501,9 @@ def attempt_subject(post_path: Path, subject: dict, shots_dir: Path,
         return result, False
 
     # Snapshot resolution, hardened. A tripped circuit breaker skips the CDX
-    # lookup; the render then uses the nearest-capture (timestamp-less) form.
+    # lookup; a CDX miss of any kind (timeout, no status-200 row, open circuit)
+    # falls back to the nearest-capture /web/2/ form instead of skipping the
+    # render -- Wayback itself redirects to the closest capture it has.
     if cdx_state is not None and cdx_state.get("tripped"):
         ts, cdx_err = None, ("cdx: skipped (circuit open after repeated "
                              "transport failures)")
@@ -430,6 +516,9 @@ def attempt_subject(post_path: Path, subject: dict, shots_dir: Path,
             cdx_state["fails"] = 0
     else:
         result["note"].append(f"cdx {url}: {cdx_err}")
+        result["note"].append(
+            "cdx miss -> nearest-capture fallback "
+            f"{archived_page_url(url, None)}")
         if cdx_state is not None and "no status-200" not in cdx_err:
             cdx_state["fails"] = cdx_state.get("fails", 0) + 1
             if cdx_state["fails"] >= CDX_BREAK_AFTER and not cdx_state.get("tripped"):
@@ -442,11 +531,23 @@ def attempt_subject(post_path: Path, subject: dict, shots_dir: Path,
     target = archived_page_url(url, ts)
     result["archived_url"] = target
 
-    ok, report = precheck_archived(target)
+    ok, report, final_url = precheck_archived(target)
     result["note"].append(report)
     if not ok:
         _stamp(post_path, result, fetch_date)
         return result, True
+
+    if not ts:
+        recovered = timestamp_from_final_url(final_url)
+        if recovered:
+            result["timestamp"] = recovered
+            result["note"].append(
+                f"nearest-capture redirect resolved to {recovered}")
+        else:
+            result["capture_mode"] = "nearest capture"
+            result["note"].append(
+                "provenance: nearest capture (no 14-digit timestamp in the "
+                "redirect target; the plate label says so)")
 
     data, report = render_screenshot(browser, target)
     result["note"].append(report)
@@ -472,6 +573,10 @@ def _stamp(post_path: Path, result: dict, fetch_date: str) -> None:
             fields["screenshot_archived_url"] = result["archived_url"]
         if result.get("timestamp"):
             fields["screenshot_timestamp"] = result["timestamp"]
+        elif result.get("capture_mode"):
+            # Nearest-capture render whose timestamp could not be recovered
+            # from the redirect target: the plate label says "nearest capture".
+            fields["screenshot_capture_mode"] = result["capture_mode"]
         fields["screenshot_fetched"] = fetch_date
     changed, note = set_front_matter_fields(post_path, fields)
     result["note"].append(f"front matter: {note}")

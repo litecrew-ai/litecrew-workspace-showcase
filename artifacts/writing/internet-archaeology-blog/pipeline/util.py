@@ -68,6 +68,34 @@ def fetch_bytes(url: str, timeout: float = 10.0):
         return None, None, "", f"timeout after {timeout:.0f}s ({host_of(url)})"
 
 
+def fetch_follow(url: str, timeout: float = 10.0):
+    """GET following redirects, REPORTING THE FINAL URL. Returns
+    (data, status, content_type, final_url, err). The final URL is how a
+    Wayback nearest-capture form (/web/2/<url>, which redirects to the closest
+    capture) resolves to a real timestamp -- fetch_bytes cannot see it.
+
+    Contract difference from fetch_bytes: an HTTP status error (urllib raises
+    HTTPError) is NOT an err -- the code travels in `status` so callers can
+    branch on it (the pre-check backs off and retries exactly HTTP 503). `err`
+    is reserved for transport-level failures. Same never-raises contract."""
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return (resp.read(), resp.status, resp.headers.get("Content-Type", ""),
+                    resp.geturl(), None)
+    except urllib.error.HTTPError as exc:
+        try:
+            final = exc.geturl()
+        except Exception:
+            final = url
+        return None, exc.code, "", final, None
+    except urllib.error.URLError as exc:
+        reason = getattr(exc, "reason", exc)
+        return None, None, "", url, f"URL error ({reason}) from {host_of(url)}"
+    except TimeoutError:
+        return None, None, "", url, f"timeout after {timeout:.0f}s ({host_of(url)})"
+
+
 def host_of(url: str) -> str:
     try:
         return urllib.parse.urlsplit(url).netloc

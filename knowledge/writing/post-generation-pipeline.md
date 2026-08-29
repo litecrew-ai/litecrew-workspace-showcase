@@ -3,7 +3,7 @@ subject: writing
 slug: post-generation-pipeline
 tags: [content-pipeline, python-stdlib, static-site, deterministic-generation, editorial-split]
 related_goals: [internet-archaeology-blog]
-related_tasks: [blog-v0-pipeline, blog-design-overhaul, blog-publish-all, blog-screenshots-and-paths, blog-screenshot-renderer]
+related_tasks: [blog-v0-pipeline, blog-design-overhaul, blog-publish-all, blog-screenshots-and-paths, blog-screenshot-renderer, blog-render-timeout-fix]
 related_knowledge: [writing/dead-web-source-catalog.md]
 last_verified_date: 2026-08-29
 status: active
@@ -177,16 +177,33 @@ needs an image-mode equivalent. What generalized:
    integration is untestable from your box, ship the honest degraded path
    AND an operator-runnable probe, then believe the probe's output over the
    documentation.
-3. **Render, don't fetch.** The robust way to picture an archived page is
-   the playback URL itself: resolve a timestamp (CDX), then have a real
-   browser screenshot `https://web.archive.org/web/<ts>/<original-url>`.
-   No image API in the middle to die. The browser is an external binary
-   invoked with `subprocess` (stdlib only): locate it via `$CHROME_BIN`,
-   else a PATH probe of common names, else macOS app bundles; run it once
-   per subject with `--headless=new --screenshot=<tmp> --window-size=...,
-   --virtual-time-budget=... --hide-scrollbars --disable-gpu
-   --user-data-dir=<throwaway profile>`; give it a wall-clock budget and
-   kill the **process group** on expiry.
+3. **Render, don't fetch -- and bound the capture with the BROWSER'S OWN
+   `--timeout`, not your wall clock.** The robust way to picture an
+   archived page is the playback URL itself: resolve a timestamp (CDX), then
+   have a real browser screenshot `https://web.archive.org/web/<ts>/
+   <original-url>`. No image API in the middle to die. The browser is an
+   external binary invoked with `subprocess` (stdlib only): locate it via
+   `$CHROME_BIN`, else a PATH probe of common names, else macOS app bundles;
+   run it once per subject with `--headless=new --screenshot=<tmp>
+   --window-size=... --virtual-time-budget=~10000 --timeout=~30000
+   --hide-scrollbars --disable-gpu --user-data-dir=<throwaway profile>`.
+   The lesson cost one full laptop run (20/20 renders dead): a
+   `--virtual-time-budget`-only invocation NEVER fires a capture while a
+   network load is pending -- Wayback pages chain every subresource through
+   more archive redirects, "load complete" never arrives, and your wall kill
+   is the only thing that stops the process, with no file written.
+   `--timeout=<ms>` is the mechanism that actually captures: the browser
+   exits at ~timeout+1s and always writes the PNG, whether the page stalled
+   on a hanging subresource or an unroutable host (both measured). Keep the
+   wall budget (process-group kill) only as the outer guard with clear
+   headroom, and pipe the browser's stderr tail into the failure log -- on
+   the reference chromium it literally says `Page load timed out ...
+   N bytes written to file`, which is what makes the next run
+   self-diagnosing. Caveat to state honestly: on current new-headless
+   chromium (150) the timeout capture of a never-loading page is a BLANK
+   frame (headless does not composite before load-complete), so the
+   calibrated floor still rejects it -- the subject degrades, but with the
+   reason on the record instead of a silent kill.
 4. **Hanging networks and failing networks produce different forgeries.**
    Measured with a real chromium: pointed at an unroutable host, the
    browser *never exits and writes no file* (killed at 100s) -- your own
@@ -206,11 +223,19 @@ needs an image-mode equivalent. What generalized:
    work: skip every subject with one actionable message ("set CHROME_BIN or
    install Chrome/Chromium"), not twenty identical apologies. A broken
    CHROME_BIN must be reported as such, never silently fallen back.
-6. **Budget for the slow index.** CDX answered only 5 of 20 lookups inside
-   5s from a reachable network; the working budget is a 25s timeout, one
-   retry, a circuit breaker that skips remaining lookups after ~4
-   consecutive transport failures (falling back to Wayback's
-   nearest-capture form), and ~2s between subjects to avoid the 503 class.
+6. **Budget for the slow index, and degrade to the nearest capture.** CDX
+   answered only 5 of 20 lookups inside 5s from a reachable network (a later
+   run: 17 of 20 with a 25s budget); the working budget is a 25s timeout,
+   one retry, and a circuit breaker that skips remaining lookups after ~4
+   consecutive transport failures. A CDX miss of ANY kind (timeout, no
+   status-200 row, open breaker) should not skip the render: fall back to
+   Wayback's nearest-capture form `https://web.archive.org/web/2/<url>`
+   (Wayback redirects "2" to the closest capture), recover the real
+   timestamp from the redirect target's final URL when the pre-check fetch
+   reports it, and label the plate "nearest capture" when it does not --
+   never date a plate by guesswork. Politeness belongs at the pre-check too:
+   one laptop run drew five HTTP 503 archive-challenge pages, so a 503 gets
+   a ~15s backoff and exactly one retry, and subjects space ~4s apart.
 7. **Degrade per subject, log every attempt.** Each subject resolves,
    pre-checks, and renders independently; failure degrades that subject to
    generated art, labeled. The run record lists every attempt (HTTP code,
@@ -292,6 +317,12 @@ deterministic scaffolding is honest about being scaffolding.
   `--verify` ALL CHECKS PASS (286 checks) including the D10 index-shape
   assertions; several unsourced texture numbers caught and removed during
   drafting, recorded in the artifact RESULT.md.
+- Render-timeout fix: the operator's 20/20 no-file render failure reproduced
+  on a loopback stalled-subresource page with the real chromium
+  (vtb-only recipe: no exit, no file); with `--timeout` the browser
+  self-captures at ~timeout+1s and always writes a PNG (also for unroutable
+  hosts). Regression test added; full suite green; see the artifact
+  RESULT.md entry for 2026-08-29 (blog-render-timeout-fix).
 
 ## Boundaries and counter-examples
 
@@ -326,11 +357,14 @@ deterministic scaffolding is honest about being scaffolding.
 - [ ] Reconcile ledger against seed corpus and posts by set equality before
       mutating any of them.
 - [ ] For image plates: declare mode in front matter, label it on the page,
-      render the real page rather than trusting an image API, layer payload
-      guards (http pre-check + playback-content check + magic bytes + exact
-      dimensions + calibrated size floor), resolve the browser once and
-      degrade once when absent, log every attempt, and hash-check bodies
-      when editing front matter of frozen files.
+      render the real page rather than trusting an image API, bound the
+      capture with the browser's own --timeout (a wall kill alone produces
+      no file on stalled pages), layer payload guards (http pre-check +
+      playback-content check + magic bytes + exact dimensions + calibrated
+      size floor), fall back to the nearest-capture form on index misses and
+      label unresolved timestamps as such, resolve the browser once and
+      degrade once when absent, log every attempt with the browser's stderr
+      tail, and hash-check bodies when editing front matter of frozen files.
 - [ ] For mounts: one URL resolver for all internal refs; page-relative
       default + config-driven prefix mode; a mounted-subpath HTTP browse
       test in verify for both modes.
@@ -349,3 +383,4 @@ deterministic scaffolding is honest about being scaffolding.
 | 2026-08-29 | Merged editorial-batch-at-scale section (number auditing, thin-sheet honesty, evidence re-probe, lead-plus-register index, ledger-drift diagnosis, scaffold retirement) | tasks/blog-publish-all.md |
 | 2026-08-29 | Merged truthful-images section (two-mode labeling, magic-byte sniffing, per-subject degradation, additive front matter with body-hash post-condition, binary gate split) and subpath-mount section (reproduce-first diagnosis, single URL resolver with path_prefix, mounted-subpath HTTP test in verify) | tasks/blog-screenshots-and-paths.md |
 | 2026-08-29 | Truthful-images section rewritten for the render-don't-fetch strategy: dead-endpoint evidence from a reachable network, subprocess browser invocation with process-group timeout, hang-vs-fast-fail forgery asymmetry and the layered payload guards with locally calibrated size floor, resolve-browser-once degradation, CDX latency budget with circuit breaker, and testing the untestable path without pretending | tasks/blog-screenshot-renderer.md |
+| 2026-08-29 | Render-timeout lesson merged: virtual-time-budget alone never captures while a load is pending (the 20/20 dead-render laptop run), chrome's own --timeout is the capture mechanism (blank-frame caveat on new headless), stderr tails for self-diagnosis, the nearest-capture /web/2/ fallback with timestamp recovery and honest labeling, and 503 backoff at the pre-check | tasks/blog-render-timeout-fix.md |

@@ -28,10 +28,13 @@ Notes:
   generated plate; where it works, the rendered PNGs are stored under
   `assets/screenshots/` (never clobbered) and the next rebuild mounts them
   with a provenance label. Delete `assets/screenshots/<slug>.<ext>` to
-  force a refetch of one subject. Budget ~25-45 minutes for 20 subjects:
-  the CDX lookup is allowed 25s plus one retry per subject, and slow
-  repeated failures trip a circuit breaker that skips straight to
-  Wayback's nearest-capture form.
+  force a refetch of one subject. Budget ~20-50 minutes for 20 subjects:
+  the CDX lookup is allowed 25s plus one retry per subject (a miss of any
+  kind falls back to Wayback's nearest-capture `/web/2/` form), the
+  archived-page pre-check is allowed 20s with one 15s-backed-off retry on
+  an HTTP 503 challenge, the render is bounded by Chrome's own 30s
+  `--timeout` (the wall guard at 75s only exists for a browser that
+  ignores the flag), and subjects pause 4s apart.
 - Steady state: draft one subject per run (the default). Bump with
   `--posts N` only when you plan editorial passes for N posts.
 
@@ -75,12 +78,15 @@ jobs:
         run: python3 run.py --fetch-screenshots || true
         # GitHub-hosted runners have egress to web.archive.org, so this is
         # where real screenshot plates come from: the step resolves each
-        # subject's snapshot via the Wayback CDX API (25s timeout + retry)
-        # and renders https://web.archive.org/web/<ts>/<url> with the
-        # runner's Chrome in headless mode -- no packages installed, the
-        # browser is invoked as a subprocess. It never fails the workflow:
-        # per-subject failures degrade to the labeled generated plate and
-        # are recorded in RESULT.md. Budget ~25-45 min for 20 subjects; the
+        # subject's snapshot via the Wayback CDX API (25s timeout + retry;
+        # a miss falls back to the nearest-capture /web/2/ form) and renders
+        # https://web.archive.org/web/<ts>/<url> with the runner's Chrome in
+        # headless mode -- no packages installed, the browser is invoked as a
+        # subprocess. Chrome's own --timeout (30s) is the capture bound; the
+        # 75s wall guard is only the outer limit. It never fails the
+        # workflow: per-subject failures degrade to the labeled generated
+        # plate and are recorded in RESULT.md, with the browser's stderr
+        # tail. Budget ~20-50 min for 20 subjects; the
         # default job timeout (360 min) covers it. Every stored binary is
         # size-reported there and by --verify; binaries are exempt from the
         # 100KB text-file gate by design (png/jpg under
