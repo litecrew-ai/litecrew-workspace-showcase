@@ -38,7 +38,31 @@ DEFAULT_CONFIG = {
         "A periodical of digital archaeology: illustrated, sourced memorials "
         "for things the internet used to have."
     ),
+    "path_prefix": "",
 }
+
+
+def norm_prefix(cfg: dict) -> str:
+    """path_prefix normalized to "" (page-relative mode, the default) or
+    "/sub/path/" (prefix-absolute mode for servers that need it)."""
+    p = str(cfg.get("path_prefix") or "").strip()
+    if not p:
+        return ""
+    if not p.startswith("/"):
+        p = "/" + p
+    return p.rstrip("/") + "/"
+
+
+def _url(cfg: dict, prefix: str, target: str) -> str:
+    """Every internal URL goes through here. Default mode keeps the page-
+    relative refs that make the site render via file:// (prefix is "" at the
+    site root, "../" on post pages). When path_prefix is configured, internal
+    refs are prefix-absolute (/site/styles.css) from every depth, which is
+    what subpath mounts behind rewriting servers need."""
+    p = norm_prefix(cfg)
+    if p:
+        return p + target.lstrip("/")
+    return prefix + target
 
 
 def load_config(path: Path | None) -> dict:
@@ -200,17 +224,17 @@ def _strip_leading_title(m: dict) -> str:
     return m["body"]
 
 
-def _cat_href(m: dict, prefix: str) -> str:
+def _cat_href(cfg: dict, m: dict, prefix: str) -> str:
     cat = m.get("category") or "uncategorized"
-    return f'{prefix}categories.html#cat-{util.slugify(cat)}'
+    return _url(cfg, prefix, f"categories.html#cat-{util.slugify(cat)}")
 
 
-def _nav(prefix: str, active: str) -> str:
+def _nav(cfg: dict, prefix: str, active: str) -> str:
     items = [
-        ("index", "dispatches", f"{prefix}index.html"),
-        ("categories", "categories", f"{prefix}categories.html"),
-        ("about", "about", f"{prefix}about.html"),
-        ("rss", "rss", f"{prefix}rss.xml"),
+        ("index", "dispatches", _url(cfg, prefix, "index.html")),
+        ("categories", "categories", _url(cfg, prefix, "categories.html")),
+        ("about", "about", _url(cfg, prefix, "about.html")),
+        ("rss", "rss", _url(cfg, prefix, "rss.xml")),
     ]
     parts = []
     for key, label, href in items:
@@ -225,8 +249,9 @@ def _site_head(cfg: dict, prefix: str, active: str) -> str:
     """Compact wordmark bar used on every page except the index (D5)."""
     return (
         f'<header class="site-head">\n'
-        f'<a class="wordmark" href="{prefix}index.html">{escape(cfg["site_title"])}</a>\n'
-        f"{_nav(prefix, active)}\n"
+        f'<a class="wordmark" href="{_url(cfg, prefix, "index.html")}">'
+        f'{escape(cfg["site_title"])}</a>\n'
+        f"{_nav(cfg, prefix, active)}\n"
         f"</header>\n"
     )
 
@@ -275,57 +300,121 @@ def illustration_for(m: dict) -> str:
     return svgart.post_illustration(m["slug"], m.get("title", m["slug"]), subtitle)
 
 
-def _card(m: dict, lead: bool, illus: str) -> str:
+SCREENSHOT_EXTS = (".png", ".jpg")
+
+
+def screenshot_file_for(screenshots_dir: Path | None, slug: str) -> str | None:
+    """Name of a stored source screenshot for this slug, or None."""
+    if not screenshots_dir:
+        return None
+    for ext in SCREENSHOT_EXTS:
+        if (screenshots_dir / f"{slug}{ext}").is_file():
+            return f"{slug}{ext}"
+    return None
+
+
+def art_for(m: dict, cfg: dict, prefix: str,
+            screenshots_dir: Path | None) -> tuple[str, str]:
+    """(mode, html) for the hero/card art. The rendered mode is the truth:
+    "screenshot" only when the front matter says so AND the stored binary
+    exists -- a missing binary degrades to the generated SVG, labeled as
+    such. A generated plate can never masquerade as a screenshot."""
+    if str(m.get("illustration", "")) == "screenshot":
+        fname = screenshot_file_for(screenshots_dir, m["slug"])
+        if fname:
+            alt = (f"Archived screenshot of {m.get('title', m['slug'])} as "
+                   f"captured by the Wayback Machine")
+            img = (f'<img src="{_url(cfg, prefix, "assets/" + fname)}" '
+                   f'alt="{escape(alt)}"/>')
+            return "screenshot", img
+    return "generated", illustration_for(m)
+
+
+def _plate_caption(m: dict, mode: str, exhibit_no: int) -> str:
+    """The visible plate label (D11): the mode is printed on the page, with
+    the archive provenance for screenshots."""
+    if mode == "screenshot":
+        ts = str(m.get("screenshot_timestamp", "") or "")
+        fd = str(m.get("screenshot_fetched", "") or "")
+        label = f"plate {exhibit_no:02d} -- screenshot: Wayback Machine"
+        if ts:
+            label += f", snapshot {ts}"
+        if fd:
+            label += f", fetched {fd}"
+        label += ("; bytes actually retrieved from the Internet Archive for "
+                  "this subject's url, not a reconstruction")
+        return label
+    return (
+        f"plate {exhibit_no:02d} -- generated memorial art: a procedural "
+        f'card seeded by the slug "{m["slug"]}"; the verifier regenerates it '
+        "byte-for-byte"
+    )
+
+
+def _card(cfg: dict, m: dict, lead: bool, art_html: str) -> str:
     cls = "card card-lead" if lead else "card"
+    post_href = _url(cfg, "", "posts/%s.html" % m["slug"])
     return (
         f'<article class="{cls}">\n'
-        f'<a class="card-art" href="posts/{m["slug"]}.html">{illus}</a>\n'
+        f'<a class="card-art" href="{post_href}">{art_html}</a>\n'
         f'<div class="card-body">\n'
         f'<p class="card-meta"><time datetime="{escape(m.get("date", ""))}">'
         f"{escape(_fmt_date(m.get('date', '')))}</time> -- "
-        f'<a href="categories.html#cat-{util.slugify(m.get("category") or "uncategorized")}">'
+        f'<a href="{_cat_href(cfg, m, "")}">'
         f"{escape(m.get('category') or 'uncategorized')}</a></p>\n"
-        f'<h2 class="card-title"><a href="posts/{m["slug"]}.html">'
+        f'<h2 class="card-title"><a href="{post_href}">'
         f'{escape(m["title"])}</a></h2>\n'
         f'<p class="card-dek">{escape(_dek(m))}</p>\n'
         "</div>\n</article>"
     )
 
 
-def _chip_row(by_cat: dict[str, list[dict]]) -> str:
+def _chip_row(cfg: dict, by_cat: dict[str, list[dict]]) -> str:
     """Category chips with counts (D10): every wing of the museum one
     click from the front page."""
     chips = []
     for cat in sorted(by_cat):
         n = len(by_cat[cat])
         count = f'<span class="chip-count">{n}</span>'
-        chips.append(
-            f'<a class="chip" href="categories.html#cat-{util.slugify(cat)}">'
-            f"{escape(cat)} {count}</a>"
-        )
+        target = _url(cfg, "", "categories.html#cat-%s" % util.slugify(cat))
+        chips.append(f'<a class="chip" href="{target}">{escape(cat)} {count}</a>')
     return '<nav class="cat-chips" aria-label="categories">\n' + "\n".join(chips) + "\n</nav>"
 
 
-def _dispatch_row(m: dict) -> str:
+def _dispatch_row(cfg: dict, m: dict) -> str:
     """One compact row of the complete-dispatch list (D10)."""
     cat = m.get("category") or "uncategorized"
+    post_href = _url(cfg, "", "posts/%s.html" % m["slug"])
     return (
         '<li class="dispatch-row">\n'
         f'<p class="dispatch-meta"><time datetime="{escape(m.get("date", ""))}">'
         f"{escape(_fmt_date(m.get('date', '')))}</time><br/>"
-        f'<a href="categories.html#cat-{util.slugify(cat)}">{escape(cat)}</a></p>\n'
+        f'<a href="{_cat_href(cfg, m, "")}">{escape(cat)}</a></p>\n'
         f'<div class="dispatch-body">\n'
-        f'<h3 class="dispatch-title"><a href="posts/{m["slug"]}.html">'
+        f'<h3 class="dispatch-title"><a href="{post_href}">'
         f'{escape(m["title"])}</a></h3>\n'
         f'<p class="dispatch-dek">{escape(_dek(m))}</p>\n'
         "</div>\n</li>"
     )
 
 
-def _provenance_html(m: dict, exhibit_no: int) -> str:
+def _provenance_html(m: dict, exhibit_no: int, mode: str) -> str:
+    if mode == "screenshot":
+        illus = "screenshot -- Wayback Machine"
+        if m.get("screenshot_timestamp"):
+            illus += ", snapshot %s" % m["screenshot_timestamp"]
+        if m.get("screenshot_fetched"):
+            illus += ", fetched %s" % m["screenshot_fetched"]
+    else:
+        illus = "generated memorial art (procedural svg)"
     rows = [
         ("Exhibit no.", f"{exhibit_no:03d}"),
         ("Data-source mode", m.get("data_source_mode", "not recorded")),
+        ("Illustration", illus),
+    ]
+    if mode == "screenshot" and m.get("screenshot_url"):
+        rows.append(("Screenshot of", str(m["screenshot_url"])))
+    rows += [
         ("Generated", m.get("generated", "not recorded")),
         ("Generator", m.get("generator", "not recorded")),
         ("Editorial pass", m.get("editor", "(none)")),
@@ -359,19 +448,21 @@ def _sources_html(m: dict) -> str:
     )
 
 
-def _pager(prefix: str, newer: dict | None, older: dict | None) -> str:
+def _pager(cfg: dict, prefix: str, newer: dict | None, older: dict | None) -> str:
     def cell(cls: str, label: str, m: dict | None) -> str:
         if not m:
             return f'<p class="{cls}"></p>'
+        href = _url(cfg, prefix, "posts/%s.html" % m["slug"])
         return (
             f'<p class="{cls}"><span class="pager-label">{label}</span>'
-            f'<a href="{prefix}posts/{m["slug"]}.html">{escape(m["title"])}</a></p>'
+            f'<a href="{href}">{escape(m["title"])}</a></p>'
         )
 
+    home = _url(cfg, prefix, "index.html")
     return (
         '<nav class="pager" aria-label="post navigation">\n'
         f"{cell('pager-newer', 'newer dispatch', newer)}\n"
-        f'<p class="pager-home"><a href="{prefix}index.html">all dispatches</a></p>\n'
+        f'<p class="pager-home"><a href="{home}">all dispatches</a></p>\n'
         f"{cell('pager-older', 'older dispatch', older)}\n"
         "</nav>"
     )
@@ -379,10 +470,13 @@ def _pager(prefix: str, newer: dict | None, older: dict | None) -> str:
 
 def _rss(cfg: dict, posts: list[dict]) -> str:
     base = cfg["base_url"].rstrip("/")
+    # Default mode keeps the historical "{base}/posts/..." shape byte-for-byte;
+    # prefix mode combines base_url + path_prefix ("/site/" -> "{base}/site/").
+    effective = norm_prefix(cfg) or "/"
     newest_date = max((m.get("date", "") for m in posts), default="")
     items = []
     for m in posts:
-        link = f"{base}/posts/{m['slug']}.html"
+        link = f"{base}{effective}posts/{m['slug']}.html"
         pub = _rfc822(m.get("date", ""))
         pub_line = f"    <pubDate>{pub}</pubDate>\n" if pub else ""
         items.append(
@@ -401,7 +495,7 @@ def _rss(cfg: dict, posts: list[dict]) -> str:
         f"<!-- {escape(cfg['site_title'])} rss feed; regenerated deterministically by the pipeline -->\n"
         '<rss version="2.0">\n<channel>\n'
         f"    <title>{escape(cfg['site_title'])}</title>\n"
-        f"    <link>{escape(base)}/</link>\n"
+        f"    <link>{escape(base + effective)}</link>\n"
         f"    <description>{escape(cfg['description'])}</description>\n"
         "    <language>en</language>\n"
         f"{build_line}"
@@ -410,14 +504,15 @@ def _rss(cfg: dict, posts: list[dict]) -> str:
     )
 
 
-def _page(title: str, body_html: str, desc: str, depth: str = "") -> str:
+def _page(cfg: dict, title: str, body_html: str, desc: str, depth: str = "") -> str:
+    css = _url(cfg, depth, "styles.css")
     return (
         "<!DOCTYPE html>\n"
         '<html lang="en">\n<head>\n<meta charset="utf-8"/>\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1"/>\n'
         f"<title>{escape(title)}</title>\n"
         f"<meta name=\"description\" content={quoteattr(desc)}/>\n"
-        f'<link rel="stylesheet" href="{depth}styles.css"/>\n'
+        f'<link rel="stylesheet" href="{css}"/>\n'
         "</head>\n<body>\n"
         f"{body_html}\n</body>\n</html>\n"
     )
@@ -450,6 +545,18 @@ def _about_markdown() -> str:
         "Dramatic tone, never fiction. Numbers that cannot be traced to a cited source "
         "do not appear, or appear hedged with the source named. Sources are printed as "
         "an exhibit label at the foot of every dispatch.\n\n"
+        "## Illustrations: screenshots versus generated plates\n\n"
+        "Every plate carries its mode as a visible label, and the two modes never "
+        "blend. \"Screenshot: Wayback Machine\" means the image is made of bytes "
+        "actually fetched from the Internet Archive for the subject's real URL; the "
+        "snapshot timestamp and the fetch date are printed on the plate and recorded "
+        "in the post's provenance box. \"Generated memorial art\" means the plate is "
+        "the gazette's own procedural SVG, seeded by the post slug -- a memorial "
+        "card, not a reproduction. There is no middle state: when the archive "
+        "cannot be reached, the gazette ships the generated plate and says so "
+        "rather than passing anything else off as a screenshot. Real screenshots "
+        "can be refreshed at any time with `python3 run.py --fetch-screenshots` "
+        "(needs egress to web.archive.org).\n\n"
         "## The site\n\n"
         "The design follows a museum-of-the-early-web brief: a modern editorial chrome "
         "around period artifacts. The illustrations, the 468x60 banner in the footer, "
@@ -470,8 +577,9 @@ def _about_markdown() -> str:
 # Build
 # ---------------------------------------------------------------------------
 
-def build_site(site_dir: Path, posts_dir: Path,
-               css_src: Path | None = None, config: dict | None = None) -> dict:
+def build_site(site_dir: Path, posts_dir: Path, css_src: Path | None = None,
+               config: dict | None = None,
+               screenshots_dir: Path | None = None) -> dict:
     """Build index, about, categories, rss, and one page per post.
     Returns a build summary."""
     cfg = dict(DEFAULT_CONFIG)
@@ -490,6 +598,13 @@ def build_site(site_dir: Path, posts_dir: Path,
 
     if css_src and css_src.exists():
         (site_dir / "styles.css").write_bytes(css_src.read_bytes())
+    # Screenshot source assets are copied into the build exactly like the
+    # stylesheet: byte-identical copy of a source-of-truth file, so clean
+    # state rebuilds stay reproducible.
+    if screenshots_dir and screenshots_dir.is_dir():
+        for shot in sorted(screenshots_dir.iterdir()):
+            if shot.is_file() and shot.suffix.lower() in SCREENSHOT_EXTS:
+                (site_dir / "assets" / shot.name).write_bytes(shot.read_bytes())
 
     # Post pages.
     for idx, m in enumerate(posts):
@@ -498,29 +613,28 @@ def build_site(site_dir: Path, posts_dir: Path,
         exhibit_no = total - idx
         newer = posts[idx - 1] if idx > 0 else None
         older = posts[idx + 1] if idx + 1 < total else None
-        body = (
+        mode, art_html = art_for(m, cfg, "../", screenshots_dir)
+        post_body = (
             f'<div class="wrap">\n{_site_head(cfg, "../", "index")}\n<main>\n'
             f'<article class="post">\n'
             f'<header class="post-head">\n'
-            f'<p class="kicker"><a href="{_cat_href(m, "../")}">{escape(m.get("category") or "uncategorized")}</a></p>\n'
+            f'<p class="kicker"><a href="{_cat_href(cfg, m, "../")}">{escape(m.get("category") or "uncategorized")}</a></p>\n'
             f'<h1 class="post-title">{escape(m["title"])}</h1>\n'
             f'<p class="post-dek">{escape(_dek(m))}</p>\n'
             f'<p class="post-byline"><time datetime="{escape(m.get("date", ""))}">'
             f"{escape(_fmt_date(m.get('date', '')))}</time> -- {m['words']} words"
             f" -- exhibit no. {exhibit_no:03d}</p>\n"
             "</header>\n"
-            f'<figure class="hero">\n<div class="hero-mount">{illus}</div>\n'
-            f'<figcaption>plate {exhibit_no:02d} -- a procedural memorial card, '
-            f'seeded by the slug "{escape(m["slug"])}"; the verifier regenerates it '
-            f"byte-for-byte</figcaption>\n</figure>\n"
+            f'<figure class="hero">\n<div class="hero-mount">{art_html}</div>\n'
+            f"<figcaption>{escape(_plate_caption(m, mode, exhibit_no))}</figcaption>\n</figure>\n"
             f'<div class="prose">\n{render_markdown(_strip_leading_title(m))}\n</div>\n'
-            f"{_provenance_html(m, exhibit_no)}\n{_sources_html(m)}\n"
-            f'{_pager("../", newer, older)}\n'
+            f"{_provenance_html(m, exhibit_no, mode)}\n{_sources_html(m)}\n"
+            f'{_pager(cfg, "../", newer, older)}\n'
             "</article>\n</main>\n</div>\n"
             f"{_footer(cfg, posts)}"
         )
         page = _page(
-            f'{m["title"]} - {cfg["site_title"]}', body, _dek(m), "../"
+            cfg, f'{m["title"]} - {cfg["site_title"]}', post_body, _dek(m), "../"
         )
         (site_dir / "posts" / f'{m["slug"]}.html').write_text(page, encoding="utf-8")
 
@@ -533,12 +647,13 @@ def build_site(site_dir: Path, posts_dir: Path,
         by_cat.setdefault(m.get("category") or "uncategorized", []).append(m)
 
     if posts:
+        lead_mode, lead_art = art_for(posts[0], cfg, "", screenshots_dir)
         cards_html = (
             '<section class="cards" aria-label="latest dispatch">\n'
-            + _card(posts[0], lead=True, illus=illustration_for(posts[0]))
+            + _card(cfg, posts[0], lead=True, art_html=lead_art)
             + "\n</section>"
         )
-        rows = "\n".join(_dispatch_row(m) for m in posts[1:])
+        rows = "\n".join(_dispatch_row(cfg, m) for m in posts[1:])
         list_head = (
             '<h2 class="list-head">the complete dispatch list '
             f'<span class="list-count">({len(posts)} total)</span></h2>'
@@ -558,16 +673,17 @@ def build_site(site_dir: Path, posts_dir: Path,
         '<section class="deck">\n'
         '<p class="deck-lede">Each dispatch remembers one thing the web killed -- a '
         "site, a service, a piece of software -- with an illustration generated "
-        "offline and every claim sourced or explicitly hedged. "
-        '<a href="about.html">How the gazette is made.</a></p>\n</section>'
+        "offline or an archived screenshot, labeled for what it is, and every "
+        "claim sourced or explicitly hedged. "
+        f'<a href="{_url(cfg, "", "about.html")}">How the gazette is made.</a></p>\n</section>'
     )
     index_body = (
-        f'<div class="wrap">\n{_masthead(cfg, posts)}{_nav("", "index")}\n'
-        f"<main>\n{deck}\n{_chip_row(by_cat)}\n{cards_html}\n{list_html}\n</main>\n</div>\n"
+        f'<div class="wrap">\n{_masthead(cfg, posts)}{_nav(cfg, "", "index")}\n'
+        f"<main>\n{deck}\n{_chip_row(cfg, by_cat)}\n{cards_html}\n{list_html}\n</main>\n</div>\n"
         f"{_footer(cfg, posts)}"
     )
     (site_dir / "index.html").write_text(
-        _page(f'{cfg["site_title"]} - {cfg["tagline"]}', index_body, cfg["description"]),
+        _page(cfg, f'{cfg["site_title"]} - {cfg["tagline"]}', index_body, cfg["description"]),
         encoding="utf-8",
     )
 
@@ -577,11 +693,12 @@ def build_site(site_dir: Path, posts_dir: Path,
         members = by_cat[cat]
         rows = []
         for m in members:
+            post_href = _url(cfg, "", "posts/%s.html" % m["slug"])
             rows.append(
                 "<li>\n"
                 f'<p class="cat-meta"><time datetime="{escape(m.get("date", ""))}">'
                 f"{escape(_fmt_date(m.get('date', '')))}</time></p>\n"
-                f'<h3 class="cat-title"><a href="posts/{m["slug"]}.html">'
+                f'<h3 class="cat-title"><a href="{post_href}">'
                 f'{escape(m["title"])}</a></h3>\n'
                 f'<p class="cat-dek">{escape(_dek(m))}</p>\n'
                 "</li>"
@@ -603,7 +720,7 @@ def build_site(site_dir: Path, posts_dir: Path,
         f"{_footer(cfg, posts)}"
     )
     (site_dir / "categories.html").write_text(
-        _page(f'Categories - {cfg["site_title"]}', cat_body, cfg["description"]),
+        _page(cfg, f'Categories - {cfg["site_title"]}', cat_body, cfg["description"]),
         encoding="utf-8",
     )
 
@@ -621,7 +738,7 @@ def build_site(site_dir: Path, posts_dir: Path,
         f"{_footer(cfg, posts)}"
     )
     (site_dir / "about.html").write_text(
-        _page(f'About - {cfg["site_title"]}', about_body, cfg["description"]),
+        _page(cfg, f'About - {cfg["site_title"]}', about_body, cfg["description"]),
         encoding="utf-8",
     )
 

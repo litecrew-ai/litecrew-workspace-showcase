@@ -9,6 +9,7 @@ running `python3 run.py` on a clock. The dedup ledger
 Run the gazette twice a week, off the top of the hour, logging to a file:
 
     23 7 * * tue,fri  cd /path/to/internet-archaeology-blog && /usr/bin/python3 run.py >> cron.log 2>&1
+    41 7 * * tue,fri  cd /path/to/internet-archaeology-blog && /usr/bin/python3 run.py --fetch-screenshots >> cron.log 2>&1
 
 Notes:
 
@@ -16,6 +17,13 @@ Notes:
 - `run.py` never fails hard on API outages; it degrades to the seed corpus
   and records the mode in `RESULT.md`. Non-zero exit only means the
   `--verify`-style checks found a real problem; cron mail will tell you.
+- The `--fetch-screenshots` line needs egress to `web.archive.org`. From a
+  network where the archive is unreachable it simply records one failed
+  attempt per subject and leaves every post on the honestly labeled
+  generated plate; where it works, fetched screenshots are stored under
+  `assets/screenshots/` (never clobbered) and the next rebuild mounts them
+  with a provenance label. Delete `assets/screenshots/<slug>.<ext>` to
+  force a refetch of one subject.
 - Steady state: draft one subject per run (the default). Bump with
   `--posts N` only when you plan editorial passes for N posts.
 
@@ -48,6 +56,17 @@ jobs:
       - name: Run the pipeline
         working-directory: artifacts/writing/internet-archaeology-blog
         run: python3 run.py --posts 1
+
+      - name: Fetch real screenshots (best effort)
+        working-directory: artifacts/writing/internet-archaeology-blog
+        run: python3 run.py --fetch-screenshots || true
+        # GitHub-hosted runners have egress to web.archive.org, so this is
+        # where real screenshot plates come from. It never fails the
+        # workflow: per-subject failures degrade to the labeled generated
+        # plate and are recorded in RESULT.md. Every stored binary is
+        # size-reported there and by --verify; binaries are exempt from the
+        # 100KB text-file gate by design (png/jpg under
+        # assets/screenshots/ and site/assets/ only).
 
       - name: Verify the built site
         working-directory: artifacts/writing/internet-archaeology-blog

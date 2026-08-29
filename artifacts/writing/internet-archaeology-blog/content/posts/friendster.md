@@ -9,11 +9,13 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: Friendster | https://en.wikipedia.org/wiki/Friendster
   - Hacker News thread: "I bought Friendster for $30k -- Here's what I'm doing with it" (2026-04-26) | https://news.ycombinator.com/item?id=47914165
   - Hacker News thread: "Friendster Relaunches" (2011-06-29) | https://news.ycombinator.com/item?id=2709870
   - Hacker News thread: "Someone is trying to rebuild Friendster" (2023-10-26) | https://news.ycombinator.com/item?id=38021802
+
 ---
 
 # Friendster

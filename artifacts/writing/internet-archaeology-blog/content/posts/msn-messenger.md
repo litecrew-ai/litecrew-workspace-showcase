@@ -9,9 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: Windows Live Messenger | https://en.wikipedia.org/wiki/Windows_Live_Messenger
   - Hacker News thread: "Skype Switched to the MSN Messenger Protocol (2014)" (2015-06-26) | https://news.ycombinator.com/item?id=9785843
+
 ---
 
 # MSN Messenger

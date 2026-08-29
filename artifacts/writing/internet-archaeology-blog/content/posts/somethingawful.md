@@ -9,12 +9,14 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: Something Awful | https://en.wikipedia.org/wiki/Something_Awful
   - Something Awful | https://www.somethingawful.com/
   - Hacker News thread: "Richard 'Lowtax' Kyanka, founder of Something Awful, has died" (2021-11-13) | https://news.ycombinator.com/item?id=29214027
   - Hacker News thread: "An Oral History of Something Awful" (2017-04-15) | https://news.ycombinator.com/item?id=14121584
   - Hacker News thread: "Something Awful, a Cornerstone of Internet Culture, Is Under New Ownership" (2020-10-15) | https://news.ycombinator.com/item?id=24784595
+
 ---
 
 # Something Awful

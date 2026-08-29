@@ -67,6 +67,10 @@ def render_front_matter(sheet: dict, sources: list[dict], status: str, editor: s
         f"editor: {editor}",
         f'data_source_mode: "{sheet["data_source_mode"]}"',
         f"generated: {date.today().isoformat()}",
+        # Illustration mode (D11): drafts start as generated art; the
+        # screenshot stage flips this to "screenshot" with provenance fields
+        # when it actually fetches bytes from the Internet Archive.
+        "illustration: generated",
         "sources:",
     ]
     for s in sources:

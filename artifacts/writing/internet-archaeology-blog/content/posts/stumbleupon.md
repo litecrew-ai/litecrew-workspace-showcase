@@ -9,11 +9,13 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: StumbleUpon | https://en.wikipedia.org/wiki/StumbleUpon
   - Hacker News thread: "StumbleUpon closing after 16 years, accounts can be migrated to Mix" (2018-05-24) | https://news.ycombinator.com/item?id=17143543
   - Hacker News thread: "Show HN: StumblingOn -- Randomly find indie websites -- recreating StumbleUpon" (2020-12-17) | https://news.ycombinator.com/item?id=25461367
   - Hacker News thread: "Reddit, Stumbleupon, Del.icio.us and Hacker News Algorithms Exposed" (2008-07-03) | https://news.ycombinator.com/item?id=234749
+
 ---
 
 # StumbleUpon

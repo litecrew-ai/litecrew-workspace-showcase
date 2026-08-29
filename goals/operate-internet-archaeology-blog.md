@@ -49,9 +49,11 @@ Related assets: artifacts/writing/README.md
 
 | Created    | Task file  | Status |
 | ---------- | ---------- | ------ |
+| 2026-08-29 | tasks/blog-screenshots-and-paths.md | todo |
 
 ## Progress log
 
 | Date       | Progress summary                                          | Key decisions                                                             |
 | ---------- | --------------------------------------------------------- | ------------------------------------------------------------------------- |
 | 2026-08-29 | Goal created as successor on completion of the build Goal | Live asset stays at its established path (cron/CI docs reference it); assets-lifecycle _closed-goals move deliberately not taken while an operating Goal references the asset |
+| 2026-08-29 | Task blog-screenshots-and-paths done: --fetch-screenshots capability (20/20 attempts failed here, archive unreachable; zero fabrication, all plates labeled generated), path_prefix resolver for subpath mounts, mounted-subpath verify stage; 392 checks PASS | Single _url resolver for every internal ref; verify now serves the site over loopback in two mount modes; RESULT.md records condensed (91.9KB, rotation flagged for a future Task); operator decision pending: binary gate exemption + optional per-image cap when screenshots first land |

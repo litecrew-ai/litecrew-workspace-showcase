@@ -9,11 +9,13 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: Cuil | https://en.wikipedia.org/wiki/Cuil
   - Hacker News thread: "Cuil Goes Down for Good" (2010-09-18) | https://news.ycombinator.com/item?id=1703416
   - Hacker News thread: "Cuil relaunches as 'cpedia.' The results are not pretty." (2010-04-10) | https://news.ycombinator.com/item?id=1255122
   - Hacker News thread: "Cuil Crawl Data: 310 terabytes of compressed data, snapshot from 2007-8" (2013-04-24) | https://news.ycombinator.com/item?id=5603013
+
 ---
 
 # Cuil

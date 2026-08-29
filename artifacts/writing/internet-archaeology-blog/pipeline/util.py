@@ -46,6 +46,28 @@ def fetch_json(url: str, params: dict | None = None, timeout: float = 8.0):
         return None, f"bad payload ({exc}) from {host_of(url)}"
 
 
+def fetch_bytes(url: str, timeout: float = 10.0):
+    """GET a binary document. Returns (data, status, content_type, None) on
+    success or (None, status_or_none, None, reason). Like fetch_json, never
+    raises: failures come back as a reason string for honest run records."""
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.read(), resp.status, resp.headers.get("Content-Type", ""), None
+    except urllib.error.HTTPError as exc:
+        body_hint = b""
+        try:
+            body_hint = exc.read(120)
+        except Exception:
+            pass
+        return None, exc.code, "", f"HTTP {exc.code} from {host_of(url)} {body_hint[:60]!r}"
+    except urllib.error.URLError as exc:
+        reason = getattr(exc, "reason", exc)
+        return None, None, "", f"URL error ({reason}) from {host_of(url)}"
+    except TimeoutError:
+        return None, None, "", f"timeout after {timeout:.0f}s ({host_of(url)})"
+
+
 def host_of(url: str) -> str:
     try:
         return urllib.parse.urlsplit(url).netloc

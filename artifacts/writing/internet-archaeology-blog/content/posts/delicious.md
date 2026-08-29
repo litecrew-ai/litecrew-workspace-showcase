@@ -9,9 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: Delicious (website) | https://en.wikipedia.org/wiki/Delicious_(website)
   - Hacker News thread: "Yahoo is Shutting Down Del.icio.us" (2010-12-16) | https://news.ycombinator.com/item?id=2013248
+
 ---
 
 # del.icio.us

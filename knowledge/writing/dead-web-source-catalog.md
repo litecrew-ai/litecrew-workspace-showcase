@@ -3,7 +3,7 @@ subject: writing
 slug: dead-web-source-catalog
 tags: [dead-web, keyless-apis, hn-algolia, wikipedia-api, wayback-cdx, research-sources]
 related_goals: [internet-archaeology-blog]
-related_tasks: [blog-v0-pipeline]
+related_tasks: [blog-v0-pipeline, blog-screenshots-and-paths]
 last_verified_date: 2026-08-29
 status: active
 ---
@@ -68,6 +68,13 @@ live data; Wikipedia and web.archive.org failed at the connection level
 `artifacts/writing/internet-archaeology-blog/RESULT.md` records the same
 split across four pipeline runs.
 
+Re-probed 2026-08-29 (Task blog-screenshots-and-paths): the Wayback screenshot
+endpoint (`https://web.archive.org/screenshot/<url>`) and CDX both failed
+per-subject for all 20 subjects (`Errno 101`). The fetcher exists as an
+operator-runnable step (`run.py --fetch-screenshots`) for runners with wider
+egress; until it succeeds somewhere, all plates are honestly labeled generated
+memorial art.
+
 ## Boundaries and counter-examples
 
 - This catalog is about sources for the dead web specifically. For general
@@ -94,3 +101,4 @@ split across four pipeline runs.
 | Date       | Change                                       | Triggered by (Task / Goal) |
 | ---------- | -------------------------------------------- | -------------------------- |
 | 2026-08-29 | Initial version from v0 blog build           | tasks/blog-v0-pipeline.md  |
+| 2026-08-29 | Added Wayback screenshot-endpoint reachability + fetcher pointer | tasks/blog-screenshots-and-paths.md |

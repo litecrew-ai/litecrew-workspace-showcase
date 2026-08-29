@@ -9,11 +9,13 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: Posterous | https://en.wikipedia.org/wiki/Posterous
   - Hacker News thread: "Posterous acquired by Twitter" (2012-03-12) | https://news.ycombinator.com/item?id=3695407
   - Hacker News thread: "Posterous will turn off on April 30" (2013-02-15) | https://news.ycombinator.com/item?id=5228997
   - Hacker News thread: "Come and help save Posterous from oblivion" (2013-03-12) | https://news.ycombinator.com/item?id=5364641
+
 ---
 
 # Posterous

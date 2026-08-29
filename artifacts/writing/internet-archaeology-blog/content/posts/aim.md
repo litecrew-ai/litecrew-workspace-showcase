@@ -9,9 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: AOL Instant Messenger | https://en.wikipedia.org/wiki/AOL_Instant_Messenger
   - Hacker News thread: "AIM will shut down after 20 years" (2017-10-06) | https://news.ycombinator.com/item?id=15417019
+
 ---
 
 # AOL Instant Messenger

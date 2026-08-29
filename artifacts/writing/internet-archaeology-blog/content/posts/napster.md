@@ -9,11 +9,13 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: Napster | https://en.wikipedia.org/wiki/Napster
   - Wikipedia: A&M Records, Inc. v. Napster, Inc. | https://en.wikipedia.org/wiki/A%26M_Records,_Inc._v._Napster,_Inc.
   - Hacker News thread: "Napster sparked a file-sharing revolution 25 years ago" (2024-06-01) | https://news.ycombinator.com/item?id=40545436
   - Hacker News thread: "Sad but true: Napster '99 still smokes Spotify 2012" (2012-03-17) | https://news.ycombinator.com/item?id=3716948
+
 ---
 
 # Napster

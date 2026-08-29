@@ -9,11 +9,13 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: Digg | https://en.wikipedia.org/wiki/Digg
   - Hacker News thread: "Betaworks has acquired the core assets of Digg" (2012-07-12) | https://news.ycombinator.com/item?id=4236601
   - Hacker News thread: "Digg's v4 launch: an optimism born of necessity (2018)" (2023-06-06) | https://news.ycombinator.com/item?id=36210548
   - Hacker News thread: "Digg is gone again" (2026-03-13) | https://news.ycombinator.com/item?id=47368135
+
 ---
 
 # Digg

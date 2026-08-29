@@ -9,11 +9,13 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: Vine (service) | https://en.wikipedia.org/wiki/Vine_(service)
   - Hacker News thread: "Vine will be discontinuing the mobile app" (2016-10-27) | https://news.ycombinator.com/item?id=12806324
   - Hacker News thread: "Vine isn't growing and most of its top executives have left" (2016-07-13) | https://news.ycombinator.com/item?id=12083561
   - Hacker News thread: "Vine founder launches TikTok competitor" (2020-01-25) | https://news.ycombinator.com/item?id=22144411
+
 ---
 
 # Vine

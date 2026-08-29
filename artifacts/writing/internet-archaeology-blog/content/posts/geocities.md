@@ -9,12 +9,14 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 1)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: GeoCities | https://en.wikipedia.org/wiki/GeoCities
   - Hacker News thread: "Tell HN: My 'mystery project': I couldn't sleep, so I backed up GeoCities" (2009-10-26) | https://news.ycombinator.com/item?id=903567
   - Hacker News thread: "The Geocities Torrent (~1TB of awesomeness)" (2010-10-27) | https://news.ycombinator.com/item?id=1840481
   - Hacker News thread: "Neocities: Free, modern Geocities reboot" (2017-01-20) | https://news.ycombinator.com/item?id=13445181
   - Hacker News thread: "A Love Letter to Geocities Sites" (2022-08-01) | https://news.ycombinator.com/item?id=32313574
+
 ---
 
 # GeoCities

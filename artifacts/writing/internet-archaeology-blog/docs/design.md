@@ -60,6 +60,30 @@ contemporary editorial.
   reachable from the index in one click at any corpus size, the page stays
   scannable at 20+ entries, and only one inline SVG (the lead) keeps the
   index small. The categories page remains the full grouped archive.
+- **D11 -- Plates carry their truth; mounts carry the prefix.** Added by
+  Task `blog-screenshots-and-paths` (2026-08-29), driven by two user
+  reports ("use real screenshots instead of fake svgs"; "style missing when
+  I mount the site as relative path"). Two halves:
+  *(a) Illustration truthfulness.* A plate is either a **screenshot** --
+  bytes actually fetched from the Wayback Machine for the subject's real
+  canonical URL, with snapshot timestamp and fetch date printed on the
+  plate (label: "screenshot: Wayback Machine, snapshot <ts>, fetched
+  <date>") and recorded in front matter plus the PROVENANCE box (new
+  "Illustration" row) -- or **generated memorial art** (the existing
+  procedural SVG, now labeled as such in the figcaption). No middle state:
+  an unreachable archive degrades the post to the generated plate, labeled;
+  a missing binary degrades the same way at render time, so the label can
+  never lie. The screenshot image mounts on the same dark mat as the SVGs
+  (`.hero-mount img`, `.card-art img`): evidence and memorial share one
+  frame, distinguished only by the label.
+  *(b) Mount-path robustness.* Internal URLs are emitted through one
+  resolver. Default (`path_prefix: ""`) keeps page-relative refs for
+  `file://` rendering; a configured prefix (`"/site/"`) emits prefix-
+  absolute refs from every depth for servers that serve a subpath index
+  without the trailing-slash redirect (the reproduced failure mode -- see
+  RESULT.md, mounted-subpath test). RSS links combine `base_url` + prefix.
+  `--verify` browses both modes over real HTTP under a subpath and asserts
+  every internal reference answers 200.
 
 ## Typography
 
@@ -145,6 +169,7 @@ Class names as implemented in `src/styles.css` and emitted by `pipeline/site.py`
 | Dispatch list  | `.dispatches`, `.list-head`, `.list-count`, `.dispatch-list`, `.dispatch-row`, `.dispatch-meta`, `.dispatch-body`, `.dispatch-title`, `.dispatch-dek` | D10 |
 | Post header    | `.post-head`, `.kicker`, `.post-title`, `.post-dek`, `.post-byline` | D1, D3 |
 | Hero figure    | `.hero` (mount + night mat), `figcaption` caption              | D2, D9   |
+| Plate label    | `figcaption` mode label (screenshot provenance or "generated memorial art"); `.hero-mount img` screenshot mount | D11 |
 | Prose          | `.prose` (66ch, drop cap, styled quotes/rules/lists)           | D3       |
 | Exhibit labels | `.exhibit`, `.exhibit-title`, `.prov-table`, `.src-list`       | D4       |
 | Pager          | `.pager`, `.pager-newer/-home/-older`, `.pager-label`         | D5       |
@@ -166,6 +191,9 @@ Class names as implemented in `src/styles.css` and emitted by `pipeline/site.py`
 | Complete dispatch list, one compact row per older post        | D10         |
 | Categories page groups every post with per-category counts    | D5, D10     |
 | Hero figure + plate caption on post pages                     | D2, D9      |
+| Plate mode label (screenshot provenance vs generated art)     | D11         |
+| Screenshot `<img>` on the shared dark mat; Illustration provenance row | D11 |
+| Internal URL resolver (page-relative default, prefix-absolute when `path_prefix` set) | D8, D11 |
 | 66ch `.prose`, drop cap, elided duplicate body H1             | D3          |
 | Exhibit-label PROVENANCE / SOURCES boxes                      | D4          |
 | Pager with older / all dispatches / newer                     | D5          |

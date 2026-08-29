@@ -218,11 +218,21 @@ a:focus-visible {
 }
 
 .card-art svg,
+.card-art img,
 .hero-mount svg,
+.hero-mount img,
 .foot-banner svg {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* Screenshot plates (D11) sit on the same dark mat as the SVGs; the
+   pixel evidence is framed exactly like the memorial cards. */
+.hero-mount img,
+.card-art img {
+  image-rendering: auto;
+  border: 1px solid #26221a;
 }
 
 .card-body {

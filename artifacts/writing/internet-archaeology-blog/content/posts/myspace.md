@@ -9,11 +9,13 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: Myspace | https://en.wikipedia.org/wiki/Myspace
   - Hacker News thread: "Myspace lost all the music its users uploaded between 2003 and 2015" (2019-03-18) | https://news.ycombinator.com/item?id=19417640
   - Hacker News thread: "Show HN: I Rebuilt MySpace from 2007" (2020-11-29) | https://news.ycombinator.com/item?id=25245740
   - Hacker News thread: "Will MySpace ever lose its monopoly? (2007)" (2018-03-28) | https://news.ycombinator.com/item?id=16700450
+
 ---
 
 # MySpace

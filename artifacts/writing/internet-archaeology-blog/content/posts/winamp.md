@@ -9,9 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 1)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: Winamp | https://en.wikipedia.org/wiki/Winamp
   - Hacker News thread: "Winamp shutting down on December 20th, 2013" (2013-11-20) | https://news.ycombinator.com/item?id=6769721
+
 ---
 
 # Winamp

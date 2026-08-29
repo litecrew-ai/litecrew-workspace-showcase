@@ -154,6 +154,72 @@ real fabrication pressure. What held it, as reusable practice:
    not weaken never-clobber: that rule protects files from automation
    during runs, and the facts persist in the fact sheets regardless.
 
+### Truthful images: real screenshots versus generated art (from the screenshots-and-paths run)
+
+When a content product shows pictures "of" a subject, the truthfulness law
+needs an image-mode equivalent. What generalized:
+
+1. **Two modes, no middle state.** A plate is either a *screenshot* (bytes
+   actually fetched from the archive for the subject's real canonical URL)
+   or *generated* (the product's own procedural art). Both carry a visible
+   label; the mode lives in front matter (`illustration: screenshot |
+   generated`) plus provenance fields (source URL, snapshot timestamp, fetch
+   date) and renders into the page's provenance box. Anything else -- a
+   mockup, a stand-in, a "representative" image -- is fabrication.
+2. **Sniff the payload before storing.** An screenshot endpoint behind an
+   outage returns HTML error pages with HTTP 200. Validate magic bytes
+   (PNG/JPEG signatures) before writing the binary; store only real images.
+   This is the image twin of "assert data renders, not that boxes exist".
+3. **Degrade per subject, log every attempt.** Each subject fetches
+   independently (CDX timestamp lookup, then the screenshot) with short
+   timeouts; failure degrades that subject to generated art, labeled. The
+   run record lists every attempt (HTTP code, bytes, error string) so a
+   future operator knows exactly what was tried.
+4. **Never-clobber binaries; refetch is explicit.** Stored screenshot files
+   are source assets the builder copies into the build (byte-identical,
+   like the stylesheet), so clean-state rebuilds stay deterministic.
+   Re-fetching means deleting the file first.
+5. **Additive-only front matter with a body hash post-condition.** When
+   automation must add metadata to frozen editorial files, edit only the
+   front-matter block, splice before the closing delimiter, and sha256 the
+   body before/after as a hard assertion (the fetch mode returns non-zero
+   on mismatch). This is the mechanical guarantee behind "post bodies stay
+   frozen".
+6. **Gate binaries explicitly.** A "no text file over N KB" gate will
+   either falsely flag image binaries or silently skip them. Split it:
+   text files over N KB fail; png/jpg under an assets path are allowed,
+   individually size-reported, and any other binary anywhere fails.
+
+### Subpath mount robustness (from the same run)
+
+User report: "style missing when I mount the site as a relative path like
+localhost/site/". Reproduce before fixing -- the diagnosis was not what it
+looked like:
+
+1. **Page-relative refs are correct on conforming servers.** Serving the
+   built site with stdlib `http.server` rooted at the repo root, browsing
+   `/<deep>/<subpath>/site/` with a trailing slash resolved every internal
+   reference (stylesheet, nav, all 40+ links) at HTTP 200; the no-slash
+   form was 301-redirected to the slash form. The breakage instead
+   reproduces with any *root-absolute* ref (`/styles.css` -> 404 under a
+   subpath), which is what page-relative refs degrade into when a rewriting
+   server serves `/site` without the slash redirect.
+2. **Fix by config, not by switching modes.** Keep page-relative as the
+   default (file:// safety) and add a `path_prefix` config (empty default;
+   `/site/` when set) that routes *every* internal href/src through one
+   resolver emitting prefix-absolute URLs from any depth. RSS links combine
+   `base_url + prefix`. One resolver function is the audit surface: grep it
+   to prove no emitter bypasses it.
+3. **Mounted-subpath server test inside verify.** Start
+   `ThreadingHTTPServer` on 127.0.0.1 port 0 rooted at the repo root (or a
+   temp root), browse the index and a post page the way a browser would
+   (follow redirects, urljoin every href/src, GET each), assert 200 for
+   all, in BOTH modes -- the tracked default build at its real subpath, and
+   a scratch prefix-mode build served at `/site/` with an added assertion
+   that no non-prefixed internal ref remains. This turns "it mounts" from
+   an assumption into a checked property and reproduces the user's exact
+   failure mode on every verify run.
+
 ### Future LLM hook
 
 Replace the draft renderer's body function with an API call that takes the
@@ -208,6 +274,12 @@ deterministic scaffolding is honest about being scaffolding.
       not just that links exist.
 - [ ] Reconcile ledger against seed corpus and posts by set equality before
       mutating any of them.
+- [ ] For image plates: declare mode in front matter, label it on the page,
+      sniff payloads before storing, log every fetch attempt, and hash-check
+      bodies when editing front matter of frozen files.
+- [ ] For mounts: one URL resolver for all internal refs; page-relative
+      default + config-driven prefix mode; a mounted-subpath HTTP browse
+      test in verify for both modes.
 
 ## Related
 
@@ -221,3 +293,4 @@ deterministic scaffolding is honest about being scaffolding.
 | 2026-08-29 | Initial version from v0 blog build           | tasks/blog-v0-pipeline.md  |
 | 2026-08-29 | Merged presentation-layer section (design brief workflow, stylesheet-as-build-product, falsy-list parser trap, render-regression guards) | tasks/blog-design-overhaul.md |
 | 2026-08-29 | Merged editorial-batch-at-scale section (number auditing, thin-sheet honesty, evidence re-probe, lead-plus-register index, ledger-drift diagnosis, scaffold retirement) | tasks/blog-publish-all.md |
+| 2026-08-29 | Merged truthful-images section (two-mode labeling, magic-byte sniffing, per-subject degradation, additive front matter with body-hash post-condition, binary gate split) and subpath-mount section (reproduce-first diagnosis, single URL resolver with path_prefix, mounted-subpath HTTP test in verify) | tasks/blog-screenshots-and-paths.md |

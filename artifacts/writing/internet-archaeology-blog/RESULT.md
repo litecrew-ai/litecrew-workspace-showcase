@@ -1809,3 +1809,86 @@ prior verification records (553/534/442).
 - PASS - ledger covers winamp
 - verify result: ALL CHECKS PASS
 
+### Run 2026-08-29 18:39:49
+
+- mode: rebuild-only; site rebuilt with 20 post(s) [winamp, vine, stumbleupon, somethingawful, posterous, pets-com, newgrounds, napster, myspace, msn-messenger, google-reader, google-plus, geocities, friendster, etoys, digg, delicious, cuil, altavista, aim]
+
+### Run 2026-08-29 18:45:14
+
+- mode: fetch-screenshots
+- subjects attempted: 20; screenshots stored: 0; degraded to generated art: 20
+- post bodies byte-identical after front-matter updates (sha256): yes
+- aim: -- url=http://aim.com -- not stored; illustration=generated -- cdx http://aim.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- altavista: -- url=http://altavista.com -- not stored; illustration=generated -- cdx http://altavista.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- cuil: -- url=http://cuil.com -- not stored; illustration=generated -- cdx http://cuil.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- delicious: -- url=http://del.icio.us -- not stored; illustration=generated -- cdx http://del.icio.us: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- digg: -- url=http://digg.com -- not stored; illustration=generated -- cdx http://digg.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- etoys: -- url=http://etoys.com -- not stored; illustration=generated -- cdx http://etoys.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- friendster: -- url=http://friendster.com -- not stored; illustration=generated -- cdx http://friendster.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- geocities: -- url=http://geocities.com -- not stored; illustration=generated -- cdx http://geocities.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- google-plus: -- url=http://plus.google.com -- not stored; illustration=generated -- cdx http://plus.google.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- google-reader: -- url=http://google.com/reader -- not stored; illustration=generated -- cdx http://google.com/reader: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- msn-messenger: -- url=http://messenger.msn.com -- not stored; illustration=generated -- cdx http://messenger.msn.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- myspace: -- url=http://myspace.com -- not stored; illustration=generated -- cdx http://myspace.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- napster: -- url=http://napster.com -- not stored; illustration=generated -- cdx http://napster.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- newgrounds: -- url=http://newgrounds.com -- not stored; illustration=generated -- cdx http://newgrounds.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- pets-com: -- url=http://pets.com -- not stored; illustration=generated -- cdx http://pets.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- posterous: -- url=http://posterous.com -- not stored; illustration=generated -- cdx http://posterous.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- somethingawful: -- url=http://somethingawful.com -- not stored; illustration=generated -- cdx http://somethingawful.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- stumbleupon: -- url=http://stumbleupon.com -- not stored; illustration=generated -- cdx http://stumbleupon.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- vine: -- url=http://vine.co -- not stored; illustration=generated -- cdx http://vine.co: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- winamp: -- url=http://winamp.com -- not stored; illustration=generated -- cdx http://winamp.com: cdx: URL error ([Errno 101] Network is unreachable) from web.archive.org -- screenshot: URL error ([Errno 101] Network is unreachable) from web.archive.org -- front matter: 1 field(s) applied
+- no binaries stored this run (nothing to size-report)
+- site rebuilt: 20 published post(s)
+
+### Run 2026-08-29 18:45:31
+
+- mode: verify -- 392 checks, ALL PASS
+- posts: 20; illustration modes: 0 screenshot, 20 generated (labels on every page)
+- mount diag: GET /artifacts/writing/internet-archaeology-blog/site without trailing slash -> HTTP 301 (a conforming server 301-redirects to the slash form; a rewriting server that does not is what breaks page-relative refs)
+- mode A ok: 31 internal refs answered 200 under /artifacts/writing/internet-archaeology-blog/site/ (default page-relative mode)
+- mode B ok: 31 prefix-absolute internal refs answered 200 under /site/ (path_prefix mode); rss links = base_url + prefix
+- mount test method: stdlib http.server on 127.0.0.1 ephemeral port, browser-like GETs (redirects followed), every internal href/src fetched; mode A rooted at the workspace root, mode B at a temp root with path_prefix=/site/
+- binary asset size report: no screenshot binaries stored
+- full per-check listing printed to stdout; this record carries section outcomes, methods, and all failures
+
+### Run 2026-08-29 18:45:41
+
+- mode: verify -- 392 checks, ALL PASS
+- posts: 20; illustration modes: 0 screenshot, 20 generated (labels on every page)
+- mount diag: GET /artifacts/writing/internet-archaeology-blog/site without trailing slash -> HTTP 301 (a conforming server 301-redirects to the slash form; a rewriting server that does not is what breaks page-relative refs)
+- mode A ok: 31 internal refs answered 200 under /artifacts/writing/internet-archaeology-blog/site/ (default page-relative mode)
+- mode B ok: 31 prefix-absolute internal refs answered 200 under /site/ (path_prefix mode); rss links = base_url + prefix
+- mount test method: stdlib http.server on 127.0.0.1 ephemeral port, browser-like GETs (redirects followed), every internal href/src fetched; mode A rooted at the workspace root, mode B at a temp root with path_prefix=/site/
+- binary asset size report: no screenshot binaries stored
+- full per-check listing printed to stdout; this record carries section outcomes, methods, and all failures
+
+### Run 2026-08-29 18:45:42
+
+- mode: verify -- 392 checks, ALL PASS
+- posts: 20; illustration modes: 0 screenshot, 20 generated (labels on every page)
+- mount diag: GET /artifacts/writing/internet-archaeology-blog/site without trailing slash -> HTTP 301 (a conforming server 301-redirects to the slash form; a rewriting server that does not is what breaks page-relative refs)
+- mode A ok: 31 internal refs answered 200 under /artifacts/writing/internet-archaeology-blog/site/ (default page-relative mode)
+- mode B ok: 31 prefix-absolute internal refs answered 200 under /site/ (path_prefix mode); rss links = base_url + prefix
+- mount test method: stdlib http.server on 127.0.0.1 ephemeral port, browser-like GETs (redirects followed), every internal href/src fetched; mode A rooted at the workspace root, mode B at a temp root with path_prefix=/site/
+- binary asset size report: no screenshot binaries stored
+- full per-check listing printed to stdout; this record carries section outcomes, methods, and all failures
+
+### Run 2026-08-29 18:46:37
+
+- mode: scratch verification of the screenshot rendering path (not a fetch)
+- method: synthetic 1x1 PNG (built in /tmp, never in the artifact tree) + a /tmp copy of one post flipped to illustration: screenshot with provenance fields
+- results: img rendered with ../assets/<slug>.png and /gz/assets/<slug>.png (prefix mode); plate label 'screenshot: Wayback Machine, snapshot <ts>, fetched <date>'; PROVENANCE gained an Illustration row and a 'Screenshot of' url row; binary copied byte-identically into site/assets; missing-binary fallback rendered the generated SVG labeled 'generated memorial art' (no mislabel possible); front-matter editor idempotent on second run and body sha256 unchanged
+- note: this exercises code paths the unreachable archive cannot; it stores no image and publishes nothing -- the tracked tree remains all-generated, honestly labeled
+
+### Run 2026-08-29 18:47:00
+
+- mode: verify -- 392 checks, ALL PASS
+- posts: 20; illustration modes: 0 screenshot, 20 generated (labels on every page)
+- mount diag: GET /artifacts/writing/internet-archaeology-blog/site without trailing slash -> HTTP 301 (a conforming server 301-redirects to the slash form; a rewriting server that does not is what breaks page-relative refs)
+- mode A ok: 31 internal refs answered 200 under /artifacts/writing/internet-archaeology-blog/site/ (default page-relative mode)
+- mode B ok: 31 prefix-absolute internal refs answered 200 under /site/ (path_prefix mode); rss links = base_url + prefix
+- mount test method: stdlib http.server on 127.0.0.1 ephemeral port, browser-like GETs (redirects followed), every internal href/src fetched; mode A rooted at the workspace root, mode B at a temp root with path_prefix=/site/
+- binary asset size report: no screenshot binaries stored
+- full per-check listing printed to stdout; this record carries section outcomes, methods, and all failures
+

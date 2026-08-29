@@ -7,7 +7,7 @@
 | slug                                 | One-line purpose                                        | Status   |
 | ------------------------------------ | ------------------------------------------------------- | -------- |
 | `dead-web-source-catalog.md`         | Keyless APIs for dead-web research and their reachability | active |
-| `post-generation-pipeline.md`        | Deterministic discovery-to-post pipeline recipe with editorial gate, design/template layer, and editorial-batch-at-scale practice | active |
+| `post-generation-pipeline.md`        | Deterministic discovery-to-post pipeline recipe with editorial gate, design/template layer, editorial-batch-at-scale practice, truthful image plates, and subpath-mount robustness | active |
 
 ## Deprecated / superseded
 

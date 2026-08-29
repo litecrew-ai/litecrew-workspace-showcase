@@ -9,9 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable"
 generated: 2026-08-29
+illustration: generated
 sources:
   - Wikipedia: EToys.com | https://en.wikipedia.org/wiki/EToys.com
   - Wikipedia: Pets.com | https://en.wikipedia.org/wiki/Pets.com
+
 ---
 
 # eToys
