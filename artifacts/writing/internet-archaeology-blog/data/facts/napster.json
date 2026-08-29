@@ -1,0 +1,86 @@
+{
+ "category": "early internet products",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "napster.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Napster",
+   "text": "Released in June 1999, built by Shawn Fanning with Sean Parker.",
+   "url": "https://en.wikipedia.org/wiki/Napster"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Napster",
+   "text": "Popularized peer-to-peer file sharing for music, connecting strangers' hard drives directly.",
+   "url": "https://en.wikipedia.org/wiki/Napster"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Napster",
+   "text": "By 2000-2001 the service was reported to have tens of millions of registered users.",
+   "url": "https://en.wikipedia.org/wiki/Napster"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: A&M Records, Inc. v. Napster, Inc.",
+   "text": "Sued by the major-record-label trade group in December 1999 (A&M Records v. Napster).",
+   "url": "https://en.wikipedia.org/wiki/A%26M_Records,_Inc._v._Napster,_Inc."
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Napster",
+   "text": "After adverse court rulings, Napster shut its service down in July 2001.",
+   "url": "https://en.wikipedia.org/wiki/Napster"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Napster",
+   "text": "Filed for Chapter 11 bankruptcy in 2002; the brand was later sold and resurfaced on legal music services under other owners.",
+   "url": "https://en.wikipedia.org/wiki/Napster"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 334,
+   "date": "2024-06-01",
+   "hn_url": "https://news.ycombinator.com/item?id=40545436",
+   "points": 389,
+   "title": "Napster sparked a file-sharing revolution 25 years ago",
+   "url": "https://torrentfreak.com/napster-sparked-a-file-sharing-revolution-25-years-ago-250601/"
+  },
+  {
+   "comments": 137,
+   "date": "2016-04-07",
+   "hn_url": "https://news.ycombinator.com/item?id=11450532",
+   "points": 278,
+   "title": "The Financial Industry Is Having Its Napster Moment",
+   "url": "http://www.bloomberg.com/news/articles/2016-04-07/the-financial-industry-is-having-its-napster-moment"
+  },
+  {
+   "comments": 88,
+   "date": "2012-03-17",
+   "hn_url": "https://news.ycombinator.com/item?id=3716948",
+   "points": 206,
+   "title": "Sad but true: Napster '99 still smokes Spotify 2012",
+   "url": "http://www.theregister.co.uk/2012/03/17/parker_fanning_on_napster/"
+  },
+  {
+   "comments": 144,
+   "date": "2019-01-29",
+   "hn_url": "https://news.ycombinator.com/item?id=19024140",
+   "points": 190,
+   "title": "Napster: A New Killer Internet App (1999)",
+   "url": "https://evolt.org/node/564"
+  }
+ ],
+ "name": "Napster",
+ "slug": "napster",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

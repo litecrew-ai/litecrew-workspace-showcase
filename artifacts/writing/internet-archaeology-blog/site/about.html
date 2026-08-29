@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>About - The Dead Web Gazette</title>
+<meta name="description" content="A periodical of digital archaeology: illustrated, sourced memorials for things the internet used to have."/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="wrap">
+<header class="site-head">
+<a class="wordmark" href="index.html">The Dead Web Gazette</a>
+<nav class="site-nav" aria-label="site">
+<a href="index.html">dispatches</a>
+<a href="categories.html">categories</a>
+<a aria-current="page" href="about.html">about</a>
+<a href="rss.xml">rss</a>
+</nav>
+
+</header>
+
+<main>
+<article class="post">
+<div class="page-head">
+<p class="kicker">the museum</p>
+<h1 class="page-title">About this gazette</h1>
+<p class="page-dek">A periodical of digital archaeology: illustrated, sourced memorials for things the internet used to have.</p>
+</div>
+<div class="prose">
+<p>The Dead Web Gazette is a small museum of things the internet used to have: defunct websites, old forums, 2000s blogs, early internet products, strange personal homepages, dead startups, old software, online subcultures, and forgotten stories. Each dispatch remembers one subject.</p>
+<h2>How dispatches are made</h2>
+<ul><li><strong>Discover.</strong> A Python pipeline (standard library only) queries keyless public APIs -- Hacker News Algolia, the Wikipedia API, and the Internet Archive Wayback CDX -- and falls back to a bundled offline seed corpus when the network is unavailable. The data-source mode of every post is recorded and printed in its provenance label.</li><li><strong>Distill facts.</strong> Each subject gets a fact sheet with confidence levels and canonical source URLs. Medium-confidence facts appear only in hedged wording.</li><li><strong>Draft.</strong> A deterministic scaffold is assembled from the fact sheet. No language model is called; an LLM hook is a documented extension point.</li><li><strong>Edit.</strong> A human editorial pass turns the draft into the dispatch you are reading, keeping every claim sourced or explicitly hedged.</li><li><strong>Illustrate.</strong> Each dispatch carries one SVG generated procedurally offline, seeded by the post slug: starfields, 88x31 buttons, hit counters, barricade stripes. The same slug always regenerates the same plate.</li><li><strong>Assemble.</strong> A static site is built that renders from the file system with one hand-written stylesheet. No JavaScript, no servers, no trackers.</li></ul>
+<h2>Truthfulness policy</h2>
+<p>Dramatic tone, never fiction. Numbers that cannot be traced to a cited source do not appear, or appear hedged with the source named. Sources are printed as an exhibit label at the foot of every dispatch.</p>
+<h2>The site</h2>
+<p>The design follows a museum-of-the-early-web brief: a modern editorial chrome around period artifacts. The illustrations, the 468x60 banner in the footer, and the hit counter are the period pieces, mounted on dark mats; everything else -- the typography, the grid, the labels -- is deliberately contemporary. The visitor counter is simulated and always has been; the number is a function of how many dispatches exist. A full design brief lives in docs/design.md.</p>
+<p>An RSS feed is published at rss.xml; set its link origin via base_url in site_config.json (documented in the README).</p>
+<h2>Colophon</h2>
+<p>Built with the Python 3.11 standard library only. Repeat runs discover new subjects, skip already-covered ones via a ledger, and rebuild the site byte-identically.</p>
+</div>
+</article>
+</main>
+</div>
+<footer class="site-foot">
+<div class="wrap">
+<div class="foot-banner"><svg xmlns="http://www.w3.org/2000/svg" width="468" height="60" viewBox="0 0 468 60" role="img" aria-label="The Dead Web Gazette banner">
+<rect width="468" height="60" fill="#000030"/>
+<rect x="327" y="14" width="1" height="1" fill="#ffffff"/>
+<rect x="174" y="37" width="1" height="1" fill="#ffffff"/>
+<rect x="457" y="8" width="2" height="2" fill="#ffffff"/>
+<rect x="376" y="58" width="3" height="3" fill="#ffffff"/>
+<rect x="186" y="1" width="3" height="3" fill="#ffffff"/>
+<rect x="129" y="55" width="1" height="1" fill="#ffffff"/>
+<rect x="293" y="36" width="1" height="1" fill="#ffffff"/>
+<rect x="287" y="55" width="1" height="1" fill="#ffffff"/>
+<rect x="48" y="1" width="1" height="1" fill="#ffffff"/>
+<rect x="242" y="8" width="2" height="2" fill="#ffffff"/>
+<rect x="163" y="9" width="2" height="2" fill="#ffffff"/>
+<rect x="137" y="49" width="1" height="1" fill="#ffffff"/>
+<rect x="394" y="54" width="2" height="2" fill="#ffffff"/>
+<rect x="450" y="59" width="1" height="1" fill="#ffffff"/>
+<rect x="261" y="7" width="1" height="1" fill="#ffffff"/>
+<rect x="118" y="1" width="1" height="1" fill="#ffffff"/>
+<rect x="237" y="33" width="1" height="1" fill="#ffffff"/>
+<rect x="319" y="16" width="3" height="3" fill="#ffffff"/>
+<rect x="98" y="57" width="1" height="1" fill="#ffffff"/>
+<rect x="58" y="53" width="1" height="1" fill="#ffffff"/>
+<rect x="69" y="30" width="1" height="1" fill="#ffffff"/>
+<rect x="41" y="35" width="1" height="1" fill="#ffffff"/>
+<rect x="78" y="42" width="1" height="1" fill="#ffffff"/>
+<rect x="311" y="11" width="1" height="1" fill="#ffffff"/>
+<rect x="460" y="2" width="1" height="1" fill="#ffffff"/>
+<rect x="146" y="3" width="3" height="3" fill="#ffffff"/>
+<rect x="273" y="58" width="1" height="1" fill="#ffffff"/>
+<rect x="251" y="22" width="2" height="2" fill="#ffffff"/>
+<rect x="390" y="12" width="1" height="1" fill="#ffffff"/>
+<rect x="336" y="34" width="2" height="2" fill="#ffffff"/>
+<rect x="153" y="44" width="2" height="2" fill="#ffffff"/>
+<rect x="426" y="26" width="3" height="3" fill="#ffffff"/>
+<rect x="465" y="12" width="1" height="1" fill="#ffffff"/>
+<rect x="153" y="52" width="2" height="2" fill="#ffffff"/>
+<rect x="278" y="16" width="2" height="2" fill="#ffffff"/>
+<rect x="273" y="38" width="1" height="1" fill="#ffffff"/>
+<rect x="429" y="27" width="1" height="1" fill="#ffffff"/>
+<rect x="160" y="28" width="2" height="2" fill="#ffffff"/>
+<rect x="91" y="21" width="1" height="1" fill="#ffffff"/>
+<rect x="35" y="59" width="2" height="2" fill="#ffffff"/>
+<rect x="164" y="48" width="2" height="2" fill="#ffffff"/>
+<rect x="287" y="44" width="3" height="3" fill="#ffffff"/>
+<rect x="439" y="49" width="1" height="1" fill="#ffffff"/>
+<rect x="106" y="32" width="2" height="2" fill="#ffffff"/>
+<rect x="71" y="44" width="3" height="3" fill="#ffffff"/>
+<rect x="76" y="13" width="1" height="1" fill="#ffffff"/>
+<rect x="402" y="11" width="1" height="1" fill="#ffffff"/>
+<rect x="111" y="46" width="2" height="2" fill="#ffffff"/>
+<rect x="269" y="24" width="2" height="2" fill="#ffffff"/>
+<rect x="453" y="30" width="1" height="1" fill="#ffffff"/>
+<rect x="138" y="29" width="1" height="1" fill="#ffffff"/>
+<rect x="6" y="13" width="1" height="1" fill="#ffffff"/>
+<rect x="201" y="46" width="1" height="1" fill="#ffffff"/>
+<rect x="161" y="42" width="3" height="3" fill="#ffffff"/>
+<rect x="305" y="34" width="1" height="1" fill="#ffffff"/>
+<rect x="201" y="55" width="1" height="1" fill="#ffffff"/>
+<rect x="240" y="30" width="3" height="3" fill="#ffffff"/>
+<rect x="314" y="1" width="1" height="1" fill="#ffffff"/>
+<rect x="463" y="6" width="1" height="1" fill="#ffffff"/>
+<rect x="52" y="38" width="3" height="3" fill="#ffffff"/>
+<rect x="18" y="57" width="3" height="3" fill="#ffffff"/>
+<rect x="64" y="31" width="3" height="3" fill="#ffffff"/>
+<rect x="22" y="22" width="2" height="2" fill="#ffffff"/>
+<rect x="154" y="30" width="3" height="3" fill="#ffffff"/>
+<rect x="37" y="51" width="2" height="2" fill="#ffffff"/>
+<rect x="46" y="38" width="1" height="1" fill="#ffffff"/>
+<rect x="143" y="20" width="2" height="2" fill="#ffffff"/>
+<rect x="436" y="49" width="3" height="3" fill="#ffffff"/>
+<rect x="227" y="35" width="1" height="1" fill="#ffffff"/>
+<rect x="184" y="31" width="1" height="1" fill="#ffffff"/>
+<rect x="409" y="16" width="2" height="2" fill="#ffffff"/>
+<rect x="464" y="59" width="1" height="1" fill="#ffffff"/>
+<rect x="456" y="5" width="3" height="3" fill="#ffffff"/>
+<rect x="416" y="18" width="3" height="3" fill="#ffffff"/>
+<rect x="437" y="14" width="1" height="1" fill="#ffffff"/>
+<rect x="208" y="59" width="1" height="1" fill="#ffffff"/>
+<rect x="457" y="13" width="1" height="1" fill="#ffffff"/>
+<rect x="387" y="41" width="1" height="1" fill="#ffffff"/>
+<rect x="433" y="18" width="2" height="2" fill="#ffffff"/>
+<rect x="26" y="7" width="1" height="1" fill="#ffffff"/>
+<rect x="25" y="4" width="3" height="3" fill="#ffffff"/>
+<rect x="151" y="11" width="2" height="2" fill="#ffffff"/>
+<rect x="52" y="0" width="1" height="1" fill="#ffffff"/>
+<rect x="117" y="12" width="3" height="3" fill="#ffffff"/>
+<rect x="395" y="58" width="3" height="3" fill="#ffffff"/>
+<rect x="145" y="46" width="2" height="2" fill="#ffffff"/>
+<rect x="41" y="57" width="2" height="2" fill="#ffffff"/>
+<rect x="40" y="20" width="3" height="3" fill="#ffffff"/>
+<rect x="350" y="16" width="1" height="1" fill="#ffffff"/>
+<rect x="190" y="22" width="2" height="2" fill="#ffffff"/>
+<rect x="2" y="2" width="464" height="56" fill="none" stroke="#00ff66" stroke-width="2"/>
+<text x="234" y="30" font-family="monospace" font-size="22" font-weight="bold" fill="#00ff66" text-anchor="middle">The Dead Web Gazette</text>
+<text x="234" y="48" font-family="monospace" font-size="10" fill="#c0c0c0" text-anchor="middle">field notes from the old web</text>
+</svg></div>
+<p class="foot-counter">you are visitor no. <span class="counter-digits">19980140</span> -- a simulated hit counter, in memoriam</p>
+<p class="foot-colophon">The Dead Web Gazette -- built with the python 3.11 standard library; one hand-written stylesheet; no javascript, no trackers, no cookies -- best viewed in any browser</p>
+</div>
+</footer>
+
+</body>
+</html>

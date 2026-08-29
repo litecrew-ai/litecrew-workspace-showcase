@@ -1,0 +1,60 @@
+{
+ "category": "early internet products",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "stumbleupon.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: StumbleUpon",
+   "text": "Founded in 2001 by Garrett Camp and co-founders while he was a student.",
+   "url": "https://en.wikipedia.org/wiki/StumbleUpon"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: StumbleUpon",
+   "text": "A toolbar whose Stumble button sent you to a random page matched to your interests.",
+   "url": "https://en.wikipedia.org/wiki/StumbleUpon"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: StumbleUpon",
+   "text": "Shut down on June 30, 2018, with users directed to its successor, Mix.",
+   "url": "https://en.wikipedia.org/wiki/StumbleUpon"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 129,
+   "date": "2018-05-24",
+   "hn_url": "https://news.ycombinator.com/item?id=17143543",
+   "points": 279,
+   "title": "StumbleUpon closing after 16 years, accounts can be migrated to Mix",
+   "url": "https://medium.com/@gc/su-is-moving-to-mix-c2c3bff037a5"
+  },
+  {
+   "comments": 61,
+   "date": "2020-12-17",
+   "hn_url": "https://news.ycombinator.com/item?id=25461367",
+   "points": 138,
+   "title": "Show HN: StumblingOn -- Randomly find indie websites -- recreating StumbleUpon",
+   "url": "https://stumblingon.com"
+  },
+  {
+   "comments": 28,
+   "date": "2008-07-03",
+   "hn_url": "https://news.ycombinator.com/item?id=234749",
+   "points": 67,
+   "title": "Reddit, Stumbleupon, Del.icio.us and Hacker News Algorithms Exposed",
+   "url": "http://www.seomoz.org/blog/reddit-stumbleupon-delicious-and-hacker-news-algorithms-exposed"
+  }
+ ],
+ "name": "StumbleUpon",
+ "slug": "stumbleupon",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

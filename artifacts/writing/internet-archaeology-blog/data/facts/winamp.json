@@ -1,0 +1,62 @@
+{
+ "category": "old software",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)",
+ "domain": "winamp.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Winamp",
+   "text": "First released in April 1997, written by Justin Frankel under the Nullsoft name.",
+   "url": "https://en.wikipedia.org/wiki/Winamp"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Winamp",
+   "text": "Its skinnable interface made it the default MP3 player of the late 1990s.",
+   "url": "https://en.wikipedia.org/wiki/Winamp"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Winamp",
+   "text": "Nullsoft was acquired by AOL in 1999 in a deal reported at the time at roughly 80 to 100 million US dollars.",
+   "url": "https://en.wikipedia.org/wiki/Winamp"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Winamp",
+   "text": "AOL announced in October 2013 that Winamp would be shut down that December.",
+   "url": "https://en.wikipedia.org/wiki/Winamp"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Winamp",
+   "text": "Instead the brand was sold to Radionomy, announced in January 2014.",
+   "url": "https://en.wikipedia.org/wiki/Winamp"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Winamp",
+   "text": "The player shipped a famous spoken tagline: it really whips the llama.",
+   "url": "https://en.wikipedia.org/wiki/Winamp"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 500,
+   "date": "2013-11-20",
+   "hn_url": "https://news.ycombinator.com/item?id=6769721",
+   "points": 957,
+   "title": "Winamp shutting down on December 20th, 2013",
+   "url": "http://www.winamp.com/media-player/en"
+  }
+ ],
+ "name": "Winamp",
+ "slug": "winamp",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

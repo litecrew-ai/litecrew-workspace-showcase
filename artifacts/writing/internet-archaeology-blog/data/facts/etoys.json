@@ -1,0 +1,35 @@
+{
+ "category": "dead startups",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable",
+ "domain": "etoys.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: EToys.com",
+   "text": "An online toy retailer that went public in May 1999 at the height of the dot-com boom.",
+   "url": "https://en.wikipedia.org/wiki/EToys.com"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: EToys.com",
+   "text": "Filed for Chapter 11 bankruptcy protection in March 2001.",
+   "url": "https://en.wikipedia.org/wiki/EToys.com"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: EToys.com",
+   "text": "The etoys.com address later ended up under other retail owners.",
+   "url": "https://en.wikipedia.org/wiki/EToys.com"
+  }
+ ],
+ "hn_threads": [],
+ "name": "eToys",
+ "slug": "etoys",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error (_ssl.c:975: The handshake operation timed out) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

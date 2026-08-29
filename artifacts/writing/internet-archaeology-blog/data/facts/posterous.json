@@ -1,0 +1,68 @@
+{
+ "category": "2000s blogs",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "posterous.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Posterous",
+   "text": "Launched in 2008 by Sachin Agarwal; let you blog by sending email.",
+   "url": "https://en.wikipedia.org/wiki/Posterous"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Posterous",
+   "text": "Acquired by Twitter in March 2012.",
+   "url": "https://en.wikipedia.org/wiki/Posterous"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Posterous",
+   "text": "Twitter announced in 2013 that Posterous would close on May 31, 2013, and offered backup tools.",
+   "url": "https://en.wikipedia.org/wiki/Posterous"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 160,
+   "date": "2012-03-12",
+   "hn_url": "https://news.ycombinator.com/item?id=3695407",
+   "points": 612,
+   "title": "Posterous acquired by Twitter",
+   "url": "http://blog.posterous.com/big-news"
+  },
+  {
+   "comments": 95,
+   "date": "2013-03-12",
+   "hn_url": "https://news.ycombinator.com/item?id=5364641",
+   "points": 305,
+   "title": "Come and help save Posterous from oblivion",
+   "url": "http://jacquesmattheij.com/come-help-save-posterous-from-oblivion"
+  },
+  {
+   "comments": 130,
+   "date": "2013-02-15",
+   "hn_url": "https://news.ycombinator.com/item?id=5228997",
+   "points": 301,
+   "title": "Posterous will turn off on April 30",
+   "url": "http://blog.posterous.com/thanks-from-posterous"
+  },
+  {
+   "comments": 115,
+   "date": "2010-06-18",
+   "hn_url": "https://news.ycombinator.com/item?id=1441997",
+   "points": 298,
+   "title": "How I \"hacked\" Dustin Curtis's Posterous.",
+   "url": ""
+  }
+ ],
+ "name": "Posterous",
+ "slug": "posterous",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error (_ssl.c:975: The handshake operation timed out) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

@@ -1,0 +1,72 @@
+{
+ "category": "early internet products",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)",
+ "domain": "google.com/reader",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Google Reader",
+   "text": "Launched on October 7, 2005 through Google Labs as an RSS feed reader.",
+   "url": "https://en.wikipedia.org/wiki/Google_Reader"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Google Reader",
+   "text": "Became the center of gravity for a devoted community of readers who shared and annotated items.",
+   "url": "https://en.wikipedia.org/wiki/Google_Reader"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Google Reader",
+   "text": "Google announced its retirement on March 13, 2013, in a blog post framed as a round of spring cleaning.",
+   "url": "https://en.wikipedia.org/wiki/Google_Reader"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Google Reader",
+   "text": "The service was retired on July 1, 2013.",
+   "url": "https://en.wikipedia.org/wiki/Google_Reader"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Google Reader",
+   "text": "The shutdown was widely covered and gave a lasting boost to alternatives such as Feedly, by most accounts in the tech press.",
+   "url": "https://en.wikipedia.org/wiki/Google_Reader"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 695,
+   "date": "2013-03-13",
+   "hn_url": "https://news.ycombinator.com/item?id=5371725",
+   "points": 1964,
+   "title": "Google Reader shutting down",
+   "url": "http://googleblog.blogspot.com/2013/03/a-second-spring-of-cleaning.html"
+  },
+  {
+   "comments": 211,
+   "date": "2013-07-02",
+   "hn_url": "https://news.ycombinator.com/item?id=5976263",
+   "points": 388,
+   "title": "Google Reader is dead",
+   "url": "http://www.google.com/reader/about/#overview-page"
+  },
+  {
+   "comments": 343,
+   "date": "2023-03-13",
+   "hn_url": "https://news.ycombinator.com/item?id=35130764",
+   "points": 535,
+   "title": "Google Reader shut down announced ten years ago today",
+   "url": "https://googleblog.blogspot.com/2013/03/a-second-spring-of-cleaning.html"
+  }
+ ],
+ "name": "Google Reader",
+ "slug": "google-reader",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

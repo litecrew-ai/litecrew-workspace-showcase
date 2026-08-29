@@ -1,0 +1,276 @@
+{
+ "version": 1,
+ "note": [
+  "Offline seed corpus for The Dead Web Gazette.",
+  "Every fact carries a confidence level (high = attested by multiple canonical",
+  "records; medium = widely reported but numbers/details vary, use hedged wording)",
+  "and a canonical source URL for human verification. Per the truthfulness law,",
+  "medium-confidence facts must appear hedged in posts, never as bare assertions.",
+  "This is a distilled fact sheet collection, not a raw data dump."
+ ],
+ "subjects": [
+  {
+   "slug": "geocities",
+   "name": "GeoCities",
+   "category": "strange personal homepages",
+   "aliases": ["geocities"],
+   "domain": "geocities.com",
+   "facts": [
+    {"text": "Founded in 1994 as Beverly Hills Internet by David Bohnett and John Rezner.", "confidence": "high", "source": "Wikipedia: GeoCities", "url": "https://en.wikipedia.org/wiki/GeoCities"},
+    {"text": "Organized user homepages into themed virtual neighborhoods with street-style addresses.", "confidence": "high", "source": "Wikipedia: GeoCities", "url": "https://en.wikipedia.org/wiki/GeoCities"},
+    {"text": "Renamed GeoCities in 1995.", "confidence": "medium", "source": "Wikipedia: GeoCities", "url": "https://en.wikipedia.org/wiki/GeoCities"},
+    {"text": "Hosted millions of user-built pages; by the late 2000s the count was reported in the tens of millions.", "confidence": "medium", "source": "Wikipedia: GeoCities", "url": "https://en.wikipedia.org/wiki/GeoCities"},
+    {"text": "Acquired by Yahoo! in 1999 in a stock deal reported at the time at roughly 3.6 billion US dollars.", "confidence": "medium", "source": "Wikipedia: GeoCities", "url": "https://en.wikipedia.org/wiki/GeoCities"},
+    {"text": "Yahoo! announced the shutdown in April 2009 and closed the US service on October 26, 2009.", "confidence": "high", "source": "Wikipedia: GeoCities", "url": "https://en.wikipedia.org/wiki/GeoCities"},
+    {"text": "Before closure, volunteer archivists including Archive Team raced to mirror millions of pages; a substantial portion survives in the Internet Archive.", "confidence": "medium", "source": "Wikipedia: GeoCities / Archive Team", "url": "https://en.wikipedia.org/wiki/GeoCities"}
+   ]
+  },
+  {
+   "slug": "napster",
+   "name": "Napster",
+   "category": "early internet products",
+   "aliases": ["napster"],
+   "domain": "napster.com",
+   "facts": [
+    {"text": "Released in June 1999, built by Shawn Fanning with Sean Parker.", "confidence": "high", "source": "Wikipedia: Napster", "url": "https://en.wikipedia.org/wiki/Napster"},
+    {"text": "Popularized peer-to-peer file sharing for music, connecting strangers' hard drives directly.", "confidence": "high", "source": "Wikipedia: Napster", "url": "https://en.wikipedia.org/wiki/Napster"},
+    {"text": "By 2000-2001 the service was reported to have tens of millions of registered users.", "confidence": "medium", "source": "Wikipedia: Napster", "url": "https://en.wikipedia.org/wiki/Napster"},
+    {"text": "Sued by the major-record-label trade group in December 1999 (A&M Records v. Napster).", "confidence": "high", "source": "Wikipedia: A&M Records, Inc. v. Napster, Inc.", "url": "https://en.wikipedia.org/wiki/A%26M_Records,_Inc._v._Napster,_Inc."},
+    {"text": "After adverse court rulings, Napster shut its service down in July 2001.", "confidence": "high", "source": "Wikipedia: Napster", "url": "https://en.wikipedia.org/wiki/Napster"},
+    {"text": "Filed for Chapter 11 bankruptcy in 2002; the brand was later sold and resurfaced on legal music services under other owners.", "confidence": "high", "source": "Wikipedia: Napster", "url": "https://en.wikipedia.org/wiki/Napster"}
+   ]
+  },
+  {
+   "slug": "google-reader",
+   "name": "Google Reader",
+   "category": "early internet products",
+   "aliases": ["google reader"],
+   "domain": "google.com/reader",
+   "facts": [
+    {"text": "Launched on October 7, 2005 through Google Labs as an RSS feed reader.", "confidence": "high", "source": "Wikipedia: Google Reader", "url": "https://en.wikipedia.org/wiki/Google_Reader"},
+    {"text": "Became the center of gravity for a devoted community of readers who shared and annotated items.", "confidence": "high", "source": "Wikipedia: Google Reader", "url": "https://en.wikipedia.org/wiki/Google_Reader"},
+    {"text": "Google announced its retirement on March 13, 2013, in a blog post framed as a round of spring cleaning.", "confidence": "high", "source": "Wikipedia: Google Reader", "url": "https://en.wikipedia.org/wiki/Google_Reader"},
+    {"text": "The service was retired on July 1, 2013.", "confidence": "high", "source": "Wikipedia: Google Reader", "url": "https://en.wikipedia.org/wiki/Google_Reader"},
+    {"text": "The shutdown was widely covered and gave a lasting boost to alternatives such as Feedly, by most accounts in the tech press.", "confidence": "medium", "source": "Wikipedia: Google Reader", "url": "https://en.wikipedia.org/wiki/Google_Reader"}
+   ]
+  },
+  {
+   "slug": "delicious",
+   "name": "del.icio.us",
+   "category": "defunct websites",
+   "aliases": ["delicious", "del.icio.us"],
+   "domain": "del.icio.us",
+   "facts": [
+    {"text": "Created in 2003 by Joshua Schachter; pioneered social bookmarking and popularized tagging.", "confidence": "high", "source": "Wikipedia: Delicious (website)", "url": "https://en.wikipedia.org/wiki/Delicious_(website)"},
+    {"text": "Acquired by Yahoo! at the end of 2005.", "confidence": "high", "source": "Wikipedia: Delicious (website)", "url": "https://en.wikipedia.org/wiki/Delicious_(website)"},
+    {"text": "An internal Yahoo! slide leaked in December 2010 suggesting the service would be sunset, triggering user panic and mass exports.", "confidence": "medium", "source": "Wikipedia: Delicious (website)", "url": "https://en.wikipedia.org/wiki/Delicious_(website)"},
+    {"text": "Sold to AVOS Systems, a company of YouTube founders Chad Hurley and Steve Chen, in 2011.", "confidence": "high", "source": "Wikipedia: Delicious (website)", "url": "https://en.wikipedia.org/wiki/Delicious_(website)"},
+    {"text": "Acquired by Pinboard on June 1, 2017 and placed in read-only mode as an archive.", "confidence": "high", "source": "Wikipedia: Delicious (website)", "url": "https://en.wikipedia.org/wiki/Delicious_(website)"}
+   ]
+  },
+  {
+   "slug": "friendster",
+   "name": "Friendster",
+   "category": "defunct websites",
+   "aliases": ["friendster"],
+   "domain": "friendster.com",
+   "facts": [
+    {"text": "Founded in 2002 by Jonathan Abrams as one of the first mainstream social networks.", "confidence": "high", "source": "Wikipedia: Friendster", "url": "https://en.wikipedia.org/wiki/Friendster"},
+    {"text": "By the late 2000s it claimed well over one hundred million registered users, most of them in Asia.", "confidence": "medium", "source": "Wikipedia: Friendster", "url": "https://en.wikipedia.org/wiki/Friendster"},
+    {"text": "In 2011 it relaunched as a social gaming service and deleted users' stored photos, blogs, and comments ahead of the switch.", "confidence": "high", "source": "Wikipedia: Friendster", "url": "https://en.wikipedia.org/wiki/Friendster"},
+    {"text": "The remnant service closed in 2015.", "confidence": "medium", "source": "Wikipedia: Friendster", "url": "https://en.wikipedia.org/wiki/Friendster"}
+   ]
+  },
+  {
+   "slug": "winamp",
+   "name": "Winamp",
+   "category": "old software",
+   "aliases": ["winamp", "nullsoft"],
+   "domain": "winamp.com",
+   "facts": [
+    {"text": "First released in April 1997, written by Justin Frankel under the Nullsoft name.", "confidence": "high", "source": "Wikipedia: Winamp", "url": "https://en.wikipedia.org/wiki/Winamp"},
+    {"text": "Its skinnable interface made it the default MP3 player of the late 1990s.", "confidence": "high", "source": "Wikipedia: Winamp", "url": "https://en.wikipedia.org/wiki/Winamp"},
+    {"text": "Nullsoft was acquired by AOL in 1999 in a deal reported at the time at roughly 80 to 100 million US dollars.", "confidence": "medium", "source": "Wikipedia: Winamp", "url": "https://en.wikipedia.org/wiki/Winamp"},
+    {"text": "AOL announced in October 2013 that Winamp would be shut down that December.", "confidence": "high", "source": "Wikipedia: Winamp", "url": "https://en.wikipedia.org/wiki/Winamp"},
+    {"text": "Instead the brand was sold to Radionomy, announced in January 2014.", "confidence": "high", "source": "Wikipedia: Winamp", "url": "https://en.wikipedia.org/wiki/Winamp"},
+    {"text": "The player shipped a famous spoken tagline: it really whips the llama.", "confidence": "high", "source": "Wikipedia: Winamp", "url": "https://en.wikipedia.org/wiki/Winamp"}
+   ]
+  },
+  {
+   "slug": "msn-messenger",
+   "name": "MSN Messenger",
+   "category": "early internet products",
+   "aliases": ["msn messenger", "windows live messenger", "msn"],
+   "domain": "messenger.msn.com",
+   "facts": [
+    {"text": "Launched on July 22, 1999 as MSN Messenger.", "confidence": "high", "source": "Wikipedia: Windows Live Messenger", "url": "https://en.wikipedia.org/wiki/Windows_Live_Messenger"},
+    {"text": "Renamed Windows Live Messenger in the mid-2000s as part of the Windows Live wave.", "confidence": "medium", "source": "Wikipedia: Windows Live Messenger", "url": "https://en.wikipedia.org/wiki/Windows_Live_Messenger"},
+    {"text": "Defined an era of after-school chatting: buddy lists, nudges, custom emoticons, and songs displayed in status messages.", "confidence": "high", "source": "Wikipedia: Windows Live Messenger", "url": "https://en.wikipedia.org/wiki/Windows_Live_Messenger"},
+    {"text": "Microsoft retired it in most markets in 2013 in favor of Skype.", "confidence": "high", "source": "Wikipedia: Windows Live Messenger", "url": "https://en.wikipedia.org/wiki/Windows_Live_Messenger"},
+    {"text": "Mainland China kept the service until October 31, 2014, the last region to go dark.", "confidence": "medium", "source": "Wikipedia: Windows Live Messenger", "url": "https://en.wikipedia.org/wiki/Windows_Live_Messenger"}
+   ]
+  },
+  {
+   "slug": "altavista",
+   "name": "AltaVista",
+   "category": "defunct websites",
+   "aliases": ["altavista"],
+   "domain": "altavista.com",
+   "facts": [
+    {"text": "Launched on December 15, 1995 out of research at Digital Equipment Corporation.", "confidence": "high", "source": "Wikipedia: AltaVista", "url": "https://en.wikipedia.org/wiki/AltaVista"},
+    {"text": "Stunned the mid-90s web with full-text search over what was then an enormous index, reported in the tens of millions of pages.", "confidence": "medium", "source": "Wikipedia: AltaVista", "url": "https://en.wikipedia.org/wiki/AltaVista"},
+    {"text": "Passed through a chain of owners, including Compaq and Overture, before ending up under Yahoo!.", "confidence": "medium", "source": "Wikipedia: AltaVista", "url": "https://en.wikipedia.org/wiki/AltaVista"},
+    {"text": "Yahoo! shut AltaVista down on July 8, 2013.", "confidence": "high", "source": "Wikipedia: AltaVista", "url": "https://en.wikipedia.org/wiki/AltaVista"}
+   ]
+  },
+  {
+   "slug": "aim",
+   "name": "AOL Instant Messenger",
+   "category": "early internet products",
+   "aliases": ["aim", "aol instant messenger"],
+   "domain": "aim.com",
+   "facts": [
+    {"text": "Launched by AOL in 1997.", "confidence": "high", "source": "Wikipedia: AOL Instant Messenger", "url": "https://en.wikipedia.org/wiki/AOL_Instant_Messenger"},
+    {"text": "The buddy list defined a generation of evening internet use in the United States.", "confidence": "high", "source": "Wikipedia: AOL Instant Messenger", "url": "https://en.wikipedia.org/wiki/AOL_Instant_Messenger"},
+    {"text": "AOL announced in October 2017 that the service would end, and it went dark on December 15, 2017.", "confidence": "high", "source": "Wikipedia: AOL Instant Messenger", "url": "https://en.wikipedia.org/wiki/AOL_Instant_Messenger"}
+   ]
+  },
+  {
+   "slug": "myspace",
+   "name": "MySpace",
+   "category": "defunct websites",
+   "aliases": ["myspace", "my space"],
+   "domain": "myspace.com",
+   "facts": [
+    {"text": "Launched in August 2003.", "confidence": "high", "source": "Wikipedia: Myspace", "url": "https://en.wikipedia.org/wiki/Myspace"},
+    {"text": "Acquired by News Corporation in July 2005 for 580 million US dollars.", "confidence": "high", "source": "Wikipedia: Myspace", "url": "https://en.wikipedia.org/wiki/Myspace"},
+    {"text": "In 2006 it was reported by at least one major measurement firm as the most-visited website in the United States.", "confidence": "medium", "source": "Wikipedia: Myspace", "url": "https://en.wikipedia.org/wiki/Myspace"},
+    {"text": "Customizable profile pages with embedded music became its signature.", "confidence": "high", "source": "Wikipedia: Myspace", "url": "https://en.wikipedia.org/wiki/Myspace"},
+    {"text": "Sold in June 2011 to Specific Media for a price reported at around 35 million US dollars.", "confidence": "medium", "source": "Wikipedia: Myspace", "url": "https://en.wikipedia.org/wiki/Myspace"}
+   ]
+  },
+  {
+   "slug": "stumbleupon",
+   "name": "StumbleUpon",
+   "category": "early internet products",
+   "aliases": ["stumbleupon", "stumble upon"],
+   "domain": "stumbleupon.com",
+   "facts": [
+    {"text": "Founded in 2001 by Garrett Camp and co-founders while he was a student.", "confidence": "high", "source": "Wikipedia: StumbleUpon", "url": "https://en.wikipedia.org/wiki/StumbleUpon"},
+    {"text": "A toolbar whose Stumble button sent you to a random page matched to your interests.", "confidence": "high", "source": "Wikipedia: StumbleUpon", "url": "https://en.wikipedia.org/wiki/StumbleUpon"},
+    {"text": "Shut down on June 30, 2018, with users directed to its successor, Mix.", "confidence": "high", "source": "Wikipedia: StumbleUpon", "url": "https://en.wikipedia.org/wiki/StumbleUpon"}
+   ]
+  },
+  {
+   "slug": "digg",
+   "name": "Digg",
+   "category": "online subcultures",
+   "aliases": ["digg", "digg v4"],
+   "domain": "digg.com",
+   "facts": [
+    {"text": "Launched in December 2004 by Kevin Rose and partners.", "confidence": "high", "source": "Wikipedia: Digg", "url": "https://en.wikipedia.org/wiki/Digg"},
+    {"text": "Community voting pushed stories to the front page; a front-page hit could flatten smaller sites, the so-called Digg effect.", "confidence": "high", "source": "Wikipedia: Digg effect", "url": "https://en.wikipedia.org/wiki/Digg"},
+    {"text": "The August 2010 version 4 redesign triggered a user revolt and a mass exodus to rival Reddit.", "confidence": "high", "source": "Wikipedia: Digg", "url": "https://en.wikipedia.org/wiki/Digg"},
+    {"text": "Sold to Betaworks in July 2012 for a price reported at around half a million US dollars, a fraction of the venture capital it had raised.", "confidence": "medium", "source": "Wikipedia: Digg", "url": "https://en.wikipedia.org/wiki/Digg"}
+   ]
+  },
+  {
+   "slug": "posterous",
+   "name": "Posterous",
+   "category": "2000s blogs",
+   "aliases": ["posterous"],
+   "domain": "posterous.com",
+   "facts": [
+    {"text": "Launched in 2008 by Sachin Agarwal; let you blog by sending email.", "confidence": "high", "source": "Wikipedia: Posterous", "url": "https://en.wikipedia.org/wiki/Posterous"},
+    {"text": "Acquired by Twitter in March 2012.", "confidence": "high", "source": "Wikipedia: Posterous", "url": "https://en.wikipedia.org/wiki/Posterous"},
+    {"text": "Twitter announced in 2013 that Posterous would close on May 31, 2013, and offered backup tools.", "confidence": "high", "source": "Wikipedia: Posterous", "url": "https://en.wikipedia.org/wiki/Posterous"}
+   ]
+  },
+  {
+   "slug": "pets-com",
+   "name": "Pets.com",
+   "category": "dead startups",
+   "aliases": ["pets.com", "pets com", "petsdotcom"],
+   "domain": "pets.com",
+   "facts": [
+    {"text": "An online pet-supplies store founded in 1998, selling bags of kibble by courier.", "confidence": "high", "source": "Wikipedia: Pets.com", "url": "https://en.wikipedia.org/wiki/Pets.com"},
+    {"text": "Its sock-puppet mascot starred in a Super Bowl advertisement in January 2000.", "confidence": "high", "source": "Wikipedia: Pets.com", "url": "https://en.wikipedia.org/wiki/Pets.com"},
+    {"text": "Went public in February 2000 at the top of the dot-com wave.", "confidence": "high", "source": "Wikipedia: Pets.com", "url": "https://en.wikipedia.org/wiki/Pets.com"},
+    {"text": "Announced liquidation in November 2000, roughly nine months after its IPO.", "confidence": "high", "source": "Wikipedia: Pets.com", "url": "https://en.wikipedia.org/wiki/Pets.com"},
+    {"text": "Became shorthand in business writing for dot-com excess.", "confidence": "high", "source": "Wikipedia: Pets.com", "url": "https://en.wikipedia.org/wiki/Pets.com"}
+   ]
+  },
+  {
+   "slug": "etoys",
+   "name": "eToys",
+   "category": "dead startups",
+   "aliases": ["etoys", "e toys"],
+   "domain": "etoys.com",
+   "facts": [
+    {"text": "An online toy retailer that went public in May 1999 at the height of the dot-com boom.", "confidence": "high", "source": "Wikipedia: EToys.com", "url": "https://en.wikipedia.org/wiki/EToys.com"},
+    {"text": "Filed for Chapter 11 bankruptcy protection in March 2001.", "confidence": "high", "source": "Wikipedia: EToys.com", "url": "https://en.wikipedia.org/wiki/EToys.com"},
+    {"text": "The etoys.com address later ended up under other retail owners.", "confidence": "medium", "source": "Wikipedia: EToys.com", "url": "https://en.wikipedia.org/wiki/EToys.com"}
+   ]
+  },
+  {
+   "slug": "vine",
+   "name": "Vine",
+   "category": "early internet products",
+   "aliases": ["vine", "vine co"],
+   "domain": "vine.co",
+   "facts": [
+    {"text": "Launched in January 2013 by Twitter, which had acquired the startup in 2012.", "confidence": "high", "source": "Wikipedia: Vine (service)", "url": "https://en.wikipedia.org/wiki/Vine_(service)"},
+    {"text": "Built an entire comedy and music culture out of six-second looping videos.", "confidence": "high", "source": "Wikipedia: Vine (service)", "url": "https://en.wikipedia.org/wiki/Vine_(service)"},
+    {"text": "Twitter announced in October 2016 that the app would be discontinued; it was wound down into a stripped-down camera app in January 2017.", "confidence": "high", "source": "Wikipedia: Vine (service)", "url": "https://en.wikipedia.org/wiki/Vine_(service)"}
+   ]
+  },
+  {
+   "slug": "google-plus",
+   "name": "Google+",
+   "category": "defunct websites",
+   "aliases": ["google+", "google plus"],
+   "domain": "plus.google.com",
+   "facts": [
+    {"text": "Launched on June 28, 2011 as Google's answer to Facebook.", "confidence": "high", "source": "Wikipedia: Google+", "url": "https://en.wikipedia.org/wiki/Google%2B"},
+    {"text": "The consumer version was shut down on April 2, 2019, after Google disclosed a software flaw that had exposed profile data and acknowledged low usage.", "confidence": "high", "source": "Wikipedia: Google+", "url": "https://en.wikipedia.org/wiki/Google%2B"}
+   ]
+  },
+  {
+   "slug": "somethingawful",
+   "name": "Something Awful",
+   "category": "old forums",
+   "aliases": ["something awful", "somethingawful", "lowtax"],
+   "domain": "somethingawful.com",
+   "facts": [
+    {"text": "Founded in 1999 by Rich Kyanka as a comedy website.", "confidence": "high", "source": "Wikipedia: Something Awful", "url": "https://en.wikipedia.org/wiki/Something_Awful"},
+    {"text": "Its pay-to-register forums incubated large chunks of early internet culture and memes.", "confidence": "high", "source": "Wikipedia: Something Awful", "url": "https://en.wikipedia.org/wiki/Something_Awful"},
+    {"text": "Kyanka died in November 2021, as widely reported at the time.", "confidence": "medium", "source": "Wikipedia: Something Awful", "url": "https://en.wikipedia.org/wiki/Something_Awful"},
+    {"text": "The forums continue to operate today.", "confidence": "high", "source": "Something Awful", "url": "https://www.somethingawful.com/"}
+   ]
+  },
+  {
+   "slug": "newgrounds",
+   "name": "Newgrounds",
+   "category": "online subcultures",
+   "aliases": ["newgrounds"],
+   "domain": "newgrounds.com",
+   "facts": [
+    {"text": "Created in 1995 by Tom Fulp.", "confidence": "high", "source": "Wikipedia: Newgrounds", "url": "https://en.wikipedia.org/wiki/Newgrounds"},
+    {"text": "Became the hub of the Flash animation and browser-game scene of the early 2000s.", "confidence": "high", "source": "Wikipedia: Newgrounds", "url": "https://en.wikipedia.org/wiki/Newgrounds"},
+    {"text": "Widely credited as a springboard for Flash-era animators and game makers.", "confidence": "medium", "source": "Wikipedia: Newgrounds", "url": "https://en.wikipedia.org/wiki/Newgrounds"}
+   ]
+  },
+  {
+   "slug": "cuil",
+   "name": "Cuil",
+   "category": "forgotten stories",
+   "aliases": ["cuil"],
+   "domain": "cuil.com",
+   "facts": [
+    {"text": "A search engine launched in July 2008 by former Google engineers, with massive press coverage at launch.", "confidence": "high", "source": "Wikipedia: Cuil", "url": "https://en.wikipedia.org/wiki/Cuil"},
+    {"text": "Claimed an index of roughly 120 billion web pages, far more than competitors publicly admitted to.", "confidence": "medium", "source": "Wikipedia: Cuil", "url": "https://en.wikipedia.org/wiki/Cuil"},
+    {"text": "The site stumbled badly on launch day under its own traffic, and closed in September 2010, a little over two years later.", "confidence": "high", "source": "Wikipedia: Cuil", "url": "https://en.wikipedia.org/wiki/Cuil"}
+   ]
+  }
+ ]
+}

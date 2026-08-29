@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The Dead Web Gazette rss feed; regenerated deterministically by the pipeline -->
+<rss version="2.0">
+<channel>
+    <title>The Dead Web Gazette</title>
+    <link>https://example.org/dead-web-gazette/</link>
+    <description>A periodical of digital archaeology: illustrated, sourced memorials for things the internet used to have.</description>
+    <language>en</language>
+    <lastBuildDate>Sat, 29 Aug 2026 00:00:00 +0000</lastBuildDate>
+<item>
+    <title>Winamp</title>
+    <link>https://example.org/dead-web-gazette/posts/winamp.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/winamp.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The skinnable player that owned the MP3 era -- it really whips the llama.</description>
+</item>
+<item>
+    <title>Vine</title>
+    <link>https://example.org/dead-web-gazette/posts/vine.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/vine.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>Six seconds, looping forever -- the app that taught a generation comedy in one breath.</description>
+</item>
+<item>
+    <title>StumbleUpon</title>
+    <link>https://example.org/dead-web-gazette/posts/stumbleupon.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/stumbleupon.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>A button that took you somewhere you never would have gone, and the web that stopped pressing it.</description>
+</item>
+<item>
+    <title>Something Awful</title>
+    <link>https://example.org/dead-web-gazette/posts/somethingawful.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/somethingawful.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The pay-to-post comedy forum that incubated the internet's sense of humor, and outlived its founder.</description>
+</item>
+<item>
+    <title>Posterous</title>
+    <link>https://example.org/dead-web-gazette/posts/posterous.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/posterous.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The blog you wrote by sending an email, acquired by the company that then deleted the emails.</description>
+</item>
+<item>
+    <title>Pets.com</title>
+    <link>https://example.org/dead-web-gazette/posts/pets-com.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/pets-com.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>A sock puppet, a Super Bowl ad, and nine months from IPO to liquidation.</description>
+</item>
+<item>
+    <title>Newgrounds</title>
+    <link>https://example.org/dead-web-gazette/posts/newgrounds.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/newgrounds.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The Flash portal where a generation of animators learned to ship, still open after the Flash went out.</description>
+</item>
+<item>
+    <title>Napster</title>
+    <link>https://example.org/dead-web-gazette/posts/napster.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/napster.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>Eighteen months in which every song ever recorded was one search away.</description>
+</item>
+<item>
+    <title>MySpace</title>
+    <link>https://example.org/dead-web-gazette/posts/myspace.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/myspace.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The site that let you paint your own walls -- and the archive that lost the music.</description>
+</item>
+<item>
+    <title>MSN Messenger</title>
+    <link>https://example.org/dead-web-gazette/posts/msn-messenger.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/msn-messenger.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The after-school network that ran on nudges, emoticons, and whatever song you were playing.</description>
+</item>
+<item>
+    <title>Google Reader</title>
+    <link>https://example.org/dead-web-gazette/posts/google-reader.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/google-reader.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The reader that watched the web for its readers, and the summer the inbox went dark.</description>
+</item>
+<item>
+    <title>Google+</title>
+    <link>https://example.org/dead-web-gazette/posts/google-plus.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/google-plus.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The social network a search engine made mandatory, and the bug notice that finally closed it.</description>
+</item>
+<item>
+    <title>GeoCities</title>
+    <link>https://example.org/dead-web-gazette/posts/geocities.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/geocities.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>A town of millions of unfinished homepages, and the strangers who stayed up on the last night to carry out the furniture.</description>
+</item>
+<item>
+    <title>Friendster</title>
+    <link>https://example.org/dead-web-gazette/posts/friendster.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/friendster.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The first social network, which deleted its own memory on the way to becoming a games site.</description>
+</item>
+<item>
+    <title>eToys</title>
+    <link>https://example.org/dead-web-gazette/posts/etoys.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/etoys.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>IPO to Chapter 11 in twenty-two months, a dot-com retail death next to its more famous neighbor.</description>
+</item>
+<item>
+    <title>Digg</title>
+    <link>https://example.org/dead-web-gazette/posts/digg.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/digg.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The front page the crowd voted for, until the crowd voted with its feet.</description>
+</item>
+<item>
+    <title>del.icio.us</title>
+    <link>https://example.org/dead-web-gazette/posts/delicious.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/delicious.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The site that taught the web to tag, kept alive at the end as a read-only exhibit of itself.</description>
+</item>
+<item>
+    <title>Cuil</title>
+    <link>https://example.org/dead-web-gazette/posts/cuil.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/cuil.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The search engine that claimed three times Google's index, and could not survive its own launch day.</description>
+</item>
+<item>
+    <title>AltaVista</title>
+    <link>https://example.org/dead-web-gazette/posts/altavista.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/altavista.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The search engine that was big enough to be the whole web's front door, until the web outgrew the door.</description>
+</item>
+<item>
+    <title>AOL Instant Messenger</title>
+    <link>https://example.org/dead-web-gazette/posts/aim.html</link>
+    <guid isPermaLink="true">https://example.org/dead-web-gazette/posts/aim.html</guid>
+    <pubDate>Sat, 29 Aug 2026 00:00:00 +0000</pubDate>
+    <description>The buddy list that decided who existed on a given evening, and the December it stopped answering.</description>
+</item>
+</channel>
+</rss>

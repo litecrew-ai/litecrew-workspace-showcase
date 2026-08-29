@@ -1,0 +1,74 @@
+{
+ "category": "defunct websites",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "altavista.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: AltaVista",
+   "text": "Launched on December 15, 1995 out of research at Digital Equipment Corporation.",
+   "url": "https://en.wikipedia.org/wiki/AltaVista"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: AltaVista",
+   "text": "Stunned the mid-90s web with full-text search over what was then an enormous index, reported in the tens of millions of pages.",
+   "url": "https://en.wikipedia.org/wiki/AltaVista"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: AltaVista",
+   "text": "Passed through a chain of owners, including Compaq and Overture, before ending up under Yahoo!.",
+   "url": "https://en.wikipedia.org/wiki/AltaVista"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: AltaVista",
+   "text": "Yahoo! shut AltaVista down on July 8, 2013.",
+   "url": "https://en.wikipedia.org/wiki/AltaVista"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 315,
+   "date": "2019-02-15",
+   "hn_url": "https://news.ycombinator.com/item?id=19170950",
+   "points": 553,
+   "title": "Altavista: The rise and fall of the biggest pre-Google search engine",
+   "url": "https://digital.com/about/altavista/"
+  },
+  {
+   "comments": 228,
+   "date": "2020-12-19",
+   "hn_url": "https://news.ycombinator.com/item?id=25477535",
+   "points": 349,
+   "title": "How AltaVista, the first good search engine, fell into the digital abyss",
+   "url": "https://tedium.co/2020/12/15/altavista-history-digital-dot-com-domain-name"
+  },
+  {
+   "comments": 124,
+   "date": "2018-08-12",
+   "hn_url": "https://news.ycombinator.com/item?id=17744073",
+   "points": 269,
+   "title": "Show HN: Didyougogo -- An Altavista slayer",
+   "url": "http://didyougogo.com/blog/didyougogo.html"
+  },
+  {
+   "comments": 49,
+   "date": "2013-06-30",
+   "hn_url": "https://news.ycombinator.com/item?id=5967136",
+   "points": 103,
+   "title": "A Eulogy For AltaVista, The Google Of Its Time",
+   "url": "http://searchengineland.com/altavista-eulogy-165366"
+  }
+ ],
+ "name": "AltaVista",
+ "slug": "altavista",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

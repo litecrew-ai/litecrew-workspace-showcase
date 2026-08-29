@@ -1,0 +1,44 @@
+{
+ "category": "early internet products",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)",
+ "domain": "aim.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: AOL Instant Messenger",
+   "text": "Launched by AOL in 1997.",
+   "url": "https://en.wikipedia.org/wiki/AOL_Instant_Messenger"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: AOL Instant Messenger",
+   "text": "The buddy list defined a generation of evening internet use in the United States.",
+   "url": "https://en.wikipedia.org/wiki/AOL_Instant_Messenger"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: AOL Instant Messenger",
+   "text": "AOL announced in October 2017 that the service would end, and it went dark on December 15, 2017.",
+   "url": "https://en.wikipedia.org/wiki/AOL_Instant_Messenger"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 330,
+   "date": "2017-10-06",
+   "hn_url": "https://news.ycombinator.com/item?id=15417019",
+   "points": 543,
+   "title": "AIM will shut down after 20 years",
+   "url": "https://www.theverge.com/2017/10/6/16435690/aim-shutting-down-after-20-years-aol-instant-messenger"
+  }
+ ],
+ "name": "AOL Instant Messenger",
+ "slug": "aim",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

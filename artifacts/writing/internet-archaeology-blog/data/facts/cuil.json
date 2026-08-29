@@ -1,0 +1,68 @@
+{
+ "category": "forgotten stories",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "cuil.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Cuil",
+   "text": "A search engine launched in July 2008 by former Google engineers, with massive press coverage at launch.",
+   "url": "https://en.wikipedia.org/wiki/Cuil"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Cuil",
+   "text": "Claimed an index of roughly 120 billion web pages, far more than competitors publicly admitted to.",
+   "url": "https://en.wikipedia.org/wiki/Cuil"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Cuil",
+   "text": "The site stumbled badly on launch day under its own traffic, and closed in September 2010, a little over two years later.",
+   "url": "https://en.wikipedia.org/wiki/Cuil"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 93,
+   "date": "2010-04-10",
+   "hn_url": "https://news.ycombinator.com/item?id=1255122",
+   "points": 102,
+   "title": "Cuil relaunches as 'cpedia.' The results are not pretty.",
+   "url": "http://cpedia.com/wiki?q=raganwald"
+  },
+  {
+   "comments": 90,
+   "date": "2010-09-18",
+   "hn_url": "https://news.ycombinator.com/item?id=1703416",
+   "points": 101,
+   "title": "Cuil Goes Down for Good",
+   "url": "http://techcrunch.com/2010/09/17/cuil-goes-down-and-we-hear-its-down-for-good/"
+  },
+  {
+   "comments": 72,
+   "date": "2010-04-14",
+   "hn_url": "https://news.ycombinator.com/item?id=1264262",
+   "points": 92,
+   "title": "Cuil responds to critisism of Cpedia",
+   "url": "http://www.cuil.com/info/blog/2010/04/13/cpedia-and-its-detractors"
+  },
+  {
+   "comments": 31,
+   "date": "2013-04-24",
+   "hn_url": "https://news.ycombinator.com/item?id=5603013",
+   "points": 83,
+   "title": "Cuil Crawl Data: 310 terabytes of compressed data, snapshot from 2007-8",
+   "url": "https://archive.org/details/cuilcrawl"
+  }
+ ],
+ "name": "Cuil",
+ "slug": "cuil",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error (_ssl.c:975: The handshake operation timed out) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

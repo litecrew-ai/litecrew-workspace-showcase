@@ -1,0 +1,74 @@
+{
+ "category": "defunct websites",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "friendster.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Friendster",
+   "text": "Founded in 2002 by Jonathan Abrams as one of the first mainstream social networks.",
+   "url": "https://en.wikipedia.org/wiki/Friendster"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Friendster",
+   "text": "By the late 2000s it claimed well over one hundred million registered users, most of them in Asia.",
+   "url": "https://en.wikipedia.org/wiki/Friendster"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Friendster",
+   "text": "In 2011 it relaunched as a social gaming service and deleted users' stored photos, blogs, and comments ahead of the switch.",
+   "url": "https://en.wikipedia.org/wiki/Friendster"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Friendster",
+   "text": "The remnant service closed in 2015.",
+   "url": "https://en.wikipedia.org/wiki/Friendster"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 614,
+   "date": "2026-04-26",
+   "hn_url": "https://news.ycombinator.com/item?id=47914165",
+   "points": 1116,
+   "title": "I bought Friendster for $30k -- Here's what I'm doing with it",
+   "url": "https://ca98am79.medium.com/i-bought-friendster-for-30k-heres-what-i-m-doing-with-it-d5e8ddb3991d"
+  },
+  {
+   "comments": 141,
+   "date": "2025-05-21",
+   "hn_url": "https://news.ycombinator.com/item?id=44053119",
+   "points": 98,
+   "title": "Ask HN: How to make Friendster great?",
+   "url": ""
+  },
+  {
+   "comments": 51,
+   "date": "2023-10-26",
+   "hn_url": "https://news.ycombinator.com/item?id=38021802",
+   "points": 62,
+   "title": "Someone is trying to rebuild Friendster",
+   "url": "https://friendster.com"
+  },
+  {
+   "comments": 33,
+   "date": "2011-06-29",
+   "hn_url": "https://news.ycombinator.com/item?id=2709870",
+   "points": 52,
+   "title": "Friendster Relaunches",
+   "url": "http://friendster.com"
+  }
+ ],
+ "name": "Friendster",
+ "slug": "friendster",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

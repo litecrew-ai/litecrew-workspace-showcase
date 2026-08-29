@@ -1,0 +1,38 @@
+{
+ "category": "defunct websites",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)",
+ "domain": "plus.google.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Google+",
+   "text": "Launched on June 28, 2011 as Google's answer to Facebook.",
+   "url": "https://en.wikipedia.org/wiki/Google%2B"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Google+",
+   "text": "The consumer version was shut down on April 2, 2019, after Google disclosed a software flaw that had exposed profile data and acknowledged low usage.",
+   "url": "https://en.wikipedia.org/wiki/Google%2B"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 699,
+   "date": "2018-10-08",
+   "hn_url": "https://news.ycombinator.com/item?id=18169243",
+   "points": 1613,
+   "title": "Shutting Down Google+ for Consumers",
+   "url": "https://blog.google/technology/safety-security/project-strobe/"
+  }
+ ],
+ "name": "Google+",
+ "slug": "google-plus",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

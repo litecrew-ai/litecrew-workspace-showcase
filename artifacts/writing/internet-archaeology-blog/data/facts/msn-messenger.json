@@ -1,0 +1,56 @@
+{
+ "category": "early internet products",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "messenger.msn.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Windows Live Messenger",
+   "text": "Launched on July 22, 1999 as MSN Messenger.",
+   "url": "https://en.wikipedia.org/wiki/Windows_Live_Messenger"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Windows Live Messenger",
+   "text": "Renamed Windows Live Messenger in the mid-2000s as part of the Windows Live wave.",
+   "url": "https://en.wikipedia.org/wiki/Windows_Live_Messenger"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Windows Live Messenger",
+   "text": "Defined an era of after-school chatting: buddy lists, nudges, custom emoticons, and songs displayed in status messages.",
+   "url": "https://en.wikipedia.org/wiki/Windows_Live_Messenger"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Windows Live Messenger",
+   "text": "Microsoft retired it in most markets in 2013 in favor of Skype.",
+   "url": "https://en.wikipedia.org/wiki/Windows_Live_Messenger"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Windows Live Messenger",
+   "text": "Mainland China kept the service until October 31, 2014, the last region to go dark.",
+   "url": "https://en.wikipedia.org/wiki/Windows_Live_Messenger"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 30,
+   "date": "2015-06-26",
+   "hn_url": "https://news.ycombinator.com/item?id=9785843",
+   "points": 65,
+   "title": "Skype Switched to the MSN Messenger Protocol (2014)",
+   "url": "https://www.kirsle.net/blog/entry/skype-switched-to-the-msn-messenger-protocol"
+  }
+ ],
+ "name": "MSN Messenger",
+ "slug": "msn-messenger",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

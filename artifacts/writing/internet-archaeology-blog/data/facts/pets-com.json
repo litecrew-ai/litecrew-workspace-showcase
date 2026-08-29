@@ -1,0 +1,56 @@
+{
+ "category": "dead startups",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "pets.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Pets.com",
+   "text": "An online pet-supplies store founded in 1998, selling bags of kibble by courier.",
+   "url": "https://en.wikipedia.org/wiki/Pets.com"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Pets.com",
+   "text": "Its sock-puppet mascot starred in a Super Bowl advertisement in January 2000.",
+   "url": "https://en.wikipedia.org/wiki/Pets.com"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Pets.com",
+   "text": "Went public in February 2000 at the top of the dot-com wave.",
+   "url": "https://en.wikipedia.org/wiki/Pets.com"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Pets.com",
+   "text": "Announced liquidation in November 2000, roughly nine months after its IPO.",
+   "url": "https://en.wikipedia.org/wiki/Pets.com"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Pets.com",
+   "text": "Became shorthand in business writing for dot-com excess.",
+   "url": "https://en.wikipedia.org/wiki/Pets.com"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 34,
+   "date": "2008-07-31",
+   "hn_url": "https://news.ycombinator.com/item?id=263443",
+   "points": 90,
+   "title": "Pets.com CEO: The Five Big Mistakes That Changed My Life and How I Moved Past Them",
+   "url": "http://www.smartnow.com/page/5991"
+  }
+ ],
+ "name": "Pets.com",
+ "slug": "pets-com",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error (_ssl.c:975: The handshake operation timed out) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

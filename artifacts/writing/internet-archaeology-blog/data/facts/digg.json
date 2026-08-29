@@ -1,0 +1,74 @@
+{
+ "category": "online subcultures",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "digg.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Digg",
+   "text": "Launched in December 2004 by Kevin Rose and partners.",
+   "url": "https://en.wikipedia.org/wiki/Digg"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Digg effect",
+   "text": "Community voting pushed stories to the front page; a front-page hit could flatten smaller sites, the so-called Digg effect.",
+   "url": "https://en.wikipedia.org/wiki/Digg"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Digg",
+   "text": "The August 2010 version 4 redesign triggered a user revolt and a mass exodus to rival Reddit.",
+   "url": "https://en.wikipedia.org/wiki/Digg"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Digg",
+   "text": "Sold to Betaworks in July 2012 for a price reported at around half a million US dollars, a fraction of the venture capital it had raised.",
+   "url": "https://en.wikipedia.org/wiki/Digg"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 477,
+   "date": "2026-03-13",
+   "hn_url": "https://news.ycombinator.com/item?id=47368135",
+   "points": 424,
+   "title": "Digg is gone again",
+   "url": "https://digg.com/"
+  },
+  {
+   "comments": 129,
+   "date": "2012-07-12",
+   "hn_url": "https://news.ycombinator.com/item?id=4236601",
+   "points": 251,
+   "title": "Betaworks has acquired the core assets of Digg",
+   "url": "http://blog.betaworks.com/post/27070595530/digg"
+  },
+  {
+   "comments": 327,
+   "date": "2023-06-06",
+   "hn_url": "https://news.ycombinator.com/item?id=36210548",
+   "points": 246,
+   "title": "Digg's v4 launch: an optimism born of necessity (2018)",
+   "url": "https://lethain.com/digg-v4/"
+  },
+  {
+   "comments": 193,
+   "date": "2012-08-01",
+   "hn_url": "https://news.ycombinator.com/item?id=4321773",
+   "points": 230,
+   "title": "The new Digg",
+   "url": "http://digg.com/"
+  }
+ ],
+ "name": "Digg",
+ "slug": "digg",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error (_ssl.c:975: The handshake operation timed out) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

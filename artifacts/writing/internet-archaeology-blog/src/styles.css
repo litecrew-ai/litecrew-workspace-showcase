@@ -1,0 +1,752 @@
+/* The Dead Web Gazette -- museum of the early web.
+ * Hand-written stylesheet; the single source of truth lives at
+ * src/styles.css and the build copies it byte-identical to site/styles.css.
+ * System fonts only (no webfonts), no frameworks, no scripts. See
+ * docs/design.md for the decision IDs referenced in comments. */
+
+:root {
+  --paper: #f6f1e6;
+  --paper-deep: #ece4d2;
+  --ink: #26221a;
+  --ink-soft: #6b6350;
+  --line: #d8cfba;
+  --oxide: #8f2d1c;
+  --teal: #0e6f6a;
+  --night: #101426;
+  --phosphor: #58d67d;
+  --serif: Georgia, "Iowan Old Style", "Times New Roman", Times, serif;
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas,
+          "DejaVu Sans Mono", monospace;
+}
+
+/* ------------------------------------------------------------------ base */
+
+* { box-sizing: border-box; }
+
+html { background: var(--paper); }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.06rem;
+  line-height: 1.7;
+}
+
+h1, h2, h3 {
+  font-family: var(--serif);
+  line-height: 1.15;
+  margin: 0;
+  font-weight: 700;
+}
+
+svg, img { max-width: 100%; }
+
+a {
+  color: var(--teal);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+a:visited { color: var(--oxide); }
+
+a:hover { color: var(--ink); text-decoration-thickness: 2px; }
+
+a:focus-visible {
+  outline: 2px solid var(--oxide);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+::selection { background: #e7dcc2; color: var(--ink); }
+
+.wrap {
+  max-width: 68rem;
+  margin-inline: auto;
+  padding: 0 1.25rem 3.5rem;
+}
+
+/* -------------------------------------------------- masthead (D1, D6) */
+
+.site-masthead {
+  text-align: center;
+  padding-top: 0.5rem;
+  border-top: 4px solid var(--ink);
+}
+
+.site-masthead::before {
+  content: "";
+  display: block;
+  border-top: 1px solid var(--ink);
+  margin-bottom: 1.9rem;
+}
+
+.masthead-kicker {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--oxide);
+  margin: 0 0 0.9rem;
+}
+
+.masthead-title {
+  font-size: clamp(2.75rem, 7vw, 4.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.6rem;
+}
+
+.masthead-tagline {
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 1.1rem;
+  margin: 0 0 1rem;
+}
+
+.masthead-stats {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 1.6rem;
+}
+
+/* ------------------------------------------------------- nav (D5, D9) */
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 1.6rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 2.6rem;
+}
+
+.site-nav a,
+.site-nav span {
+  text-decoration: none;
+  color: var(--teal);
+}
+
+.site-nav a:visited { color: var(--teal); }
+
+.site-nav a:hover { color: var(--ink); }
+
+.site-nav a[aria-current="page"] {
+  color: var(--ink);
+  border-bottom: 2px solid var(--oxide);
+}
+
+/* Subpage compact head: wordmark left, nav right (D5). */
+.site-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.4rem 1.5rem;
+  padding: 1rem 0 0.7rem;
+  margin-bottom: 2.4rem;
+  border-bottom: 4px double var(--ink);
+}
+
+.site-head .wordmark {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.site-head .wordmark:hover { color: var(--oxide); }
+
+.site-head .site-nav {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* -------------------------------------------------- index deck (D1) */
+
+.deck {
+  max-width: 46rem;
+  margin: 0 auto 2.6rem;
+  text-align: center;
+}
+
+.deck-lede {
+  font-style: italic;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.deck-lede a { white-space: nowrap; }
+
+/* ------------------------------------------------- cards (D1, D2, D6) */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 1.75rem;
+}
+
+.card {
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+.card:hover { border-color: var(--oxide); }
+
+/* Artifact mount: period art on a dark screen mat (D2). */
+.card-art {
+  display: block;
+  background: var(--night);
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.card-art svg,
+.hero-mount svg,
+.foot-banner svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.card-body {
+  padding: 1.1rem 1.25rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex: 1;
+}
+
+.card-meta {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.card-meta a { color: var(--teal); }
+
+.card-title {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.card-title a { color: var(--ink); text-decoration: none; }
+
+.card-title a:hover {
+  color: var(--oxide);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.card-dek {
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 1rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Newest post gets the lead spread (D1). */
+.card-lead {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 5fr 4fr;
+}
+
+.card-lead .card-art {
+  border-bottom: 0;
+  border-right: 1px solid var(--line);
+}
+
+.card-lead .card-body {
+  justify-content: center;
+  padding: 1.6rem 1.9rem;
+}
+
+.card-lead .card-title { font-size: 1.9rem; }
+
+/* ---------------------------------------- category chips (D10) */
+
+.cat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 54rem;
+  margin: 0 auto 2.8rem;
+}
+
+.chip {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  text-decoration: none;
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  padding: 0.3rem 0.75rem;
+  white-space: nowrap;
+}
+
+.chip:hover { border-color: var(--oxide); color: var(--ink); }
+
+.chip-count { color: var(--ink-soft); margin-left: 0.2rem; }
+
+/* --------------------------------- complete dispatch list (D10) */
+
+.list-head {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-top: 3px solid var(--ink);
+  margin: 3.2rem 0 0.2rem;
+  padding-top: 0.6rem;
+}
+
+.list-count { color: var(--oxide); }
+
+.dispatch-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dispatch-row {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  gap: 0 1.6rem;
+  padding: 0.95rem 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.dispatch-row:last-child { border-bottom: 0; }
+
+.dispatch-meta {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0;
+  padding-top: 0.3rem;
+  line-height: 1.8;
+}
+
+.dispatch-meta a { color: var(--teal); }
+
+.dispatch-title {
+  font-size: 1.18rem;
+  line-height: 1.25;
+  margin: 0 0 0.2rem;
+}
+
+.dispatch-title a { color: var(--ink); text-decoration: none; }
+
+.dispatch-title a:hover {
+  color: var(--oxide);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.dispatch-dek {
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 0.96rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* --------------------------------------------------- post page (D3) */
+
+.post {
+  max-width: 66ch;
+  margin: 0 auto;
+}
+
+.post-head {
+  margin-bottom: 2.2rem;
+}
+
+.kicker {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0 0 0.8rem;
+}
+
+.kicker a { color: var(--oxide); }
+
+.post-title {
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  line-height: 1.15;
+  margin: 0 0 0.8rem;
+}
+
+.post-dek {
+  font-style: italic;
+  font-size: 1.2rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  margin: 0 0 1.1rem;
+}
+
+.post-byline {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+/* Hero: the artifact on its mount, captioned like a plate (D2, D9). */
+.hero {
+  margin: 2.1rem 0 2.6rem;
+}
+
+.hero-mount {
+  background: var(--night);
+  border: 1px solid var(--line);
+  padding: 0.9rem;
+}
+
+.hero figcaption {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  margin-top: 0.65rem;
+}
+
+/* ---------------------------------------------------- prose (D3) */
+
+.prose {
+  max-width: 66ch;
+  margin-inline: auto;
+  font-size: 1.06rem;
+  line-height: 1.72;
+}
+
+.prose > p:first-of-type::first-letter {
+  float: left;
+  font-size: 3.3em;
+  line-height: 0.82;
+  padding: 0.05em 0.14em 0 0;
+  font-weight: 700;
+}
+
+.prose h2 {
+  font-size: 1.45rem;
+  margin: 2.3rem 0 0.8rem;
+}
+
+.prose h3 {
+  font-size: 1.15rem;
+  margin: 1.8rem 0 0.6rem;
+}
+
+.prose blockquote {
+  margin: 1.5rem 0;
+  padding: 0.2rem 0 0.2rem 1.1rem;
+  border-left: 3px solid var(--oxide);
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.prose blockquote p { margin: 0.4rem 0; }
+
+.prose ul { padding-left: 1.35rem; margin: 1rem 0; }
+
+.prose li { margin: 0.4rem 0; }
+
+.prose li::marker { color: var(--oxide); }
+
+.prose hr {
+  border: 0;
+  border-top: 1px dashed var(--line);
+  margin: 2.2rem 0;
+}
+
+/* ------------------------------------------- exhibit labels (D4) */
+
+.exhibit {
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--oxide);
+  padding: 1rem 1.3rem 1.1rem;
+  margin: 2.4rem 0 1.2rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
+.exhibit-title {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 0.8rem;
+}
+
+.exhibit-title::after {
+  content: "";
+  display: block;
+  border-top: 1px solid var(--line);
+  margin-top: 0.5rem;
+}
+
+.prov-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.prov-table td {
+  vertical-align: top;
+  padding: 0.18rem 1rem 0.18rem 0;
+  text-align: left;
+}
+
+.prov-table td:first-child {
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.src-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.src-list li { margin: 0.5rem 0; }
+
+.src-list a { overflow-wrap: anywhere; }
+
+/* ---------------------------------------------------- pager (D5) */
+
+.pager {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1.2rem;
+  align-items: baseline;
+  border-top: 1px solid var(--line);
+  margin-top: 2.6rem;
+  padding-top: 1.2rem;
+}
+
+.pager-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.25rem;
+}
+
+.pager a { font-family: var(--serif); font-size: 0.98rem; }
+
+.pager-newer { text-align: left; margin: 0; }
+
+.pager-home { text-align: center; margin: 0; }
+
+.pager-home a {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.pager-older { text-align: right; margin: 0; }
+
+/* ------------------------------------- page head (about, categories) */
+
+.page-head {
+  max-width: 66ch;
+  margin: 0 auto 2.4rem;
+}
+
+.page-title {
+  font-size: clamp(1.9rem, 4vw, 2.4rem);
+  margin: 0 0 0.7rem;
+}
+
+.page-dek {
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 1.1rem;
+  margin: 0 0 1rem;
+}
+
+/* ------------------------------------------------ categories page */
+
+.cat-group {
+  max-width: 66ch;
+  margin: 0 auto 2.6rem;
+}
+
+.cat-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.45rem;
+  margin-bottom: 0.3rem;
+}
+
+.cat-name { font-size: 1.45rem; }
+
+.cat-count {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.cat-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cat-list li {
+  padding: 1.05rem 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.cat-meta {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 0.3rem;
+}
+
+.cat-title { font-size: 1.3rem; margin: 0 0 0.3rem; }
+
+.cat-title a { color: var(--ink); text-decoration: none; }
+
+.cat-title a:hover {
+  color: var(--oxide);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.cat-dek {
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 0.98rem;
+  margin: 0;
+}
+
+/* ------------------------------------------- footer (D2, D6, D8) */
+
+.site-foot {
+  border-top: 4px solid var(--ink);
+  position: relative;
+  text-align: center;
+}
+
+.site-foot::before {
+  content: "";
+  display: block;
+  border-top: 1px solid var(--ink);
+  margin-top: 3px;
+}
+
+.site-foot .wrap { padding-bottom: 2.6rem; }
+
+.foot-banner {
+  display: flex;
+  justify-content: center;
+  padding-top: 1.6rem;
+}
+
+.foot-banner svg { width: min(468px, 100%); }
+
+.foot-counter {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin: 1.3rem 0 0.7rem;
+}
+
+.counter-digits {
+  display: inline-block;
+  background: var(--night);
+  color: var(--phosphor);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 0.28rem 0.6rem;
+  border: 1px solid var(--ink);
+}
+
+.foot-colophon {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* ------------------------------------------------- responsive */
+
+@media (max-width: 50rem) {
+  .card-lead {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-lead .card-art {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .dispatch-row {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+
+  .dispatch-meta { padding-top: 0; }
+}
+
+@media (max-width: 35rem) {
+  .wrap { padding: 0 0.9rem 2.6rem; }
+
+  .site-head { flex-direction: column; align-items: flex-start; }
+
+  .pager { grid-template-columns: 1fr; }
+
+  .pager-newer, .pager-home, .pager-older { text-align: left; }
+}

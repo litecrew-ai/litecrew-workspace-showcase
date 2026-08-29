@@ -1,0 +1,66 @@
+{
+ "category": "old forums",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "somethingawful.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Something Awful",
+   "text": "Founded in 1999 by Rich Kyanka as a comedy website.",
+   "url": "https://en.wikipedia.org/wiki/Something_Awful"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Something Awful",
+   "text": "Its pay-to-register forums incubated large chunks of early internet culture and memes.",
+   "url": "https://en.wikipedia.org/wiki/Something_Awful"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Something Awful",
+   "text": "Kyanka died in November 2021, as widely reported at the time.",
+   "url": "https://en.wikipedia.org/wiki/Something_Awful"
+  },
+  {
+   "confidence": "high",
+   "source": "Something Awful",
+   "text": "The forums continue to operate today.",
+   "url": "https://www.somethingawful.com/"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 160,
+   "date": "2021-11-13",
+   "hn_url": "https://news.ycombinator.com/item?id=29214027",
+   "points": 256,
+   "title": "Richard 'Lowtax' Kyanka, founder of Something Awful, has died",
+   "url": "https://www.vice.com/en/article/v7dmqb/richard-lowtax-kyanka-founder-of-something-awful-is-dead-at-45"
+  },
+  {
+   "comments": 108,
+   "date": "2017-04-15",
+   "hn_url": "https://news.ycombinator.com/item?id=14121584",
+   "points": 201,
+   "title": "An Oral History of Something Awful",
+   "url": "https://motherboard.vice.com/en_us/article/fuck-you-and-die-an-oral-history-of-something-awful"
+  },
+  {
+   "comments": 22,
+   "date": "2020-10-15",
+   "hn_url": "https://news.ycombinator.com/item?id=24784595",
+   "points": 54,
+   "title": "Something Awful, a Cornerstone of Internet Culture, Is Under New Ownership",
+   "url": "https://www.vice.com/en/article/3azxy8/something-awful-under-new-ownership"
+  }
+ ],
+ "name": "Something Awful",
+ "slug": "somethingawful",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error (_ssl.c:975: The handshake operation timed out) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

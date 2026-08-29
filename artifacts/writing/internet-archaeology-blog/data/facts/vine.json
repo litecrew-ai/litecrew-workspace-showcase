@@ -1,0 +1,68 @@
+{
+ "category": "early internet products",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "vine.co",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Vine (service)",
+   "text": "Launched in January 2013 by Twitter, which had acquired the startup in 2012.",
+   "url": "https://en.wikipedia.org/wiki/Vine_(service)"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Vine (service)",
+   "text": "Built an entire comedy and music culture out of six-second looping videos.",
+   "url": "https://en.wikipedia.org/wiki/Vine_(service)"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Vine (service)",
+   "text": "Twitter announced in October 2016 that the app would be discontinued; it was wound down into a stripped-down camera app in January 2017.",
+   "url": "https://en.wikipedia.org/wiki/Vine_(service)"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 160,
+   "date": "2016-10-27",
+   "hn_url": "https://news.ycombinator.com/item?id=12806324",
+   "points": 451,
+   "title": "Vine will be discontinuing the mobile app",
+   "url": "https://medium.com/@vine/important-news-about-vine-909c5f4ae7a7#.as5uverxh"
+  },
+  {
+   "comments": 156,
+   "date": "2020-01-25",
+   "hn_url": "https://news.ycombinator.com/item?id=22144411",
+   "points": 254,
+   "title": "Vine founder launches TikTok competitor",
+   "url": "http://Byte.co"
+  },
+  {
+   "comments": 166,
+   "date": "2016-07-13",
+   "hn_url": "https://news.ycombinator.com/item?id=12083561",
+   "points": 203,
+   "title": "Vine isn't growing and most of its top executives have left",
+   "url": "http://www.recode.net/2016/7/12/12150660/vine-growth-departures-hannah-donovan-app-future"
+  },
+  {
+   "comments": 49,
+   "date": "2025-02-22",
+   "hn_url": "https://news.ycombinator.com/item?id=43144040",
+   "points": 203,
+   "title": "Vine: A programming language based on Interaction Nets",
+   "url": "https://vine.dev/docs/"
+  }
+ ],
+ "name": "Vine",
+ "slug": "vine",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error (_ssl.c:975: The handshake operation timed out) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

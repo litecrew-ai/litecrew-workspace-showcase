@@ -36,7 +36,16 @@ to know" — experience and technical detail) is described in `knowledge/README.
 > When a Task exposes a missing "how to", Eve either writes the handbook immediately or
 > logs it here for later.
 
-- _(empty)_
+- `development.md` (suggested by Task `blog-v0-pipeline`, reinforced by
+  `blog-design-overhaul`): a "Content products: verify what you publish" section --
+  adopt the generator-side checks from
+  `artifacts/writing/internet-archaeology-blog/run.py --verify` (internal link
+  resolution, HTML tag balance, regeneration determinism, glyph gate, size gate,
+  stylesheet/feed checks) as default exit criteria for any Task producing generated
+  text or HTML. Must include the falsy-list lesson: assert that data *renders*
+  (e.g. every source URL appears in output), not that boxes exist -- the v0 verifier
+  passed while every SOURCES box shipped empty. Detail pool:
+  `knowledge/writing/post-generation-pipeline.md`.
 
 ## Organization
 

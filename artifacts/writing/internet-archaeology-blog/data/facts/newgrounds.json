@@ -1,0 +1,44 @@
+{
+ "category": "online subcultures",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "newgrounds.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Newgrounds",
+   "text": "Created in 1995 by Tom Fulp.",
+   "url": "https://en.wikipedia.org/wiki/Newgrounds"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Newgrounds",
+   "text": "Became the hub of the Flash animation and browser-game scene of the early 2000s.",
+   "url": "https://en.wikipedia.org/wiki/Newgrounds"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Newgrounds",
+   "text": "Widely credited as a springboard for Flash-era animators and game makers.",
+   "url": "https://en.wikipedia.org/wiki/Newgrounds"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 45,
+   "date": "2025-08-18",
+   "hn_url": "https://news.ycombinator.com/item?id=44945730",
+   "points": 110,
+   "title": "Newgrounds: Flash Forward 2025",
+   "url": "https://www.newgrounds.com/bbs/topic/1542140"
+  }
+ ],
+ "name": "Newgrounds",
+ "slug": "newgrounds",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error (_ssl.c:975: The handshake operation timed out) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

@@ -1,0 +1,56 @@
+{
+ "category": "defunct websites",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)",
+ "domain": "del.icio.us",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Delicious (website)",
+   "text": "Created in 2003 by Joshua Schachter; pioneered social bookmarking and popularized tagging.",
+   "url": "https://en.wikipedia.org/wiki/Delicious_(website)"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Delicious (website)",
+   "text": "Acquired by Yahoo! at the end of 2005.",
+   "url": "https://en.wikipedia.org/wiki/Delicious_(website)"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Delicious (website)",
+   "text": "An internal Yahoo! slide leaked in December 2010 suggesting the service would be sunset, triggering user panic and mass exports.",
+   "url": "https://en.wikipedia.org/wiki/Delicious_(website)"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Delicious (website)",
+   "text": "Sold to AVOS Systems, a company of YouTube founders Chad Hurley and Steve Chen, in 2011.",
+   "url": "https://en.wikipedia.org/wiki/Delicious_(website)"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Delicious (website)",
+   "text": "Acquired by Pinboard on June 1, 2017 and placed in read-only mode as an archive.",
+   "url": "https://en.wikipedia.org/wiki/Delicious_(website)"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 293,
+   "date": "2010-12-16",
+   "hn_url": "https://news.ycombinator.com/item?id=2013248",
+   "points": 486,
+   "title": "Yahoo is Shutting Down Del.icio.us",
+   "url": "http://techcrunch.com/2010/12/16/is-yahoo-shutting-down-del-icio-us/"
+  }
+ ],
+ "name": "del.icio.us",
+ "slug": "delicious",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

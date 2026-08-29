@@ -1,0 +1,80 @@
+{
+ "category": "defunct websites",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "myspace.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Myspace",
+   "text": "Launched in August 2003.",
+   "url": "https://en.wikipedia.org/wiki/Myspace"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Myspace",
+   "text": "Acquired by News Corporation in July 2005 for 580 million US dollars.",
+   "url": "https://en.wikipedia.org/wiki/Myspace"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Myspace",
+   "text": "In 2006 it was reported by at least one major measurement firm as the most-visited website in the United States.",
+   "url": "https://en.wikipedia.org/wiki/Myspace"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: Myspace",
+   "text": "Customizable profile pages with embedded music became its signature.",
+   "url": "https://en.wikipedia.org/wiki/Myspace"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: Myspace",
+   "text": "Sold in June 2011 to Specific Media for a price reported at around 35 million US dollars.",
+   "url": "https://en.wikipedia.org/wiki/Myspace"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 290,
+   "date": "2020-11-29",
+   "hn_url": "https://news.ycombinator.com/item?id=25245740",
+   "points": 726,
+   "title": "Show HN: I Rebuilt MySpace from 2007",
+   "url": "https://spacehey.com/?ref=hn"
+  },
+  {
+   "comments": 315,
+   "date": "2018-03-28",
+   "hn_url": "https://news.ycombinator.com/item?id=16700450",
+   "points": 534,
+   "title": "Will MySpace ever lose its monopoly? (2007)",
+   "url": "https://www.theguardian.com/technology/2007/feb/08/business.comment"
+  },
+  {
+   "comments": 182,
+   "date": "2019-03-18",
+   "hn_url": "https://news.ycombinator.com/item?id=19417640",
+   "points": 343,
+   "title": "Myspace lost all the music its users uploaded between 2003 and 2015",
+   "url": "https://boingboing.net/2019/03/17/facebook-is-next.html"
+  },
+  {
+   "comments": 264,
+   "date": "2012-09-24",
+   "hn_url": "https://news.ycombinator.com/item?id=4567052",
+   "points": 333,
+   "title": "Myspace previews complete redesign",
+   "url": "https://new.myspace.com/"
+  }
+ ],
+ "name": "MySpace",
+ "slug": "myspace",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}

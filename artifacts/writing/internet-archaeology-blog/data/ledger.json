@@ -1,0 +1,247 @@
+{
+ "aim": {
+  "category": "early internet products",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)",
+  "draft": null,
+  "name": "AOL Instant Messenger",
+  "post": "content/posts/aim.md",
+  "post_exists": true,
+  "via": [
+   "hn-algolia",
+   "seed-corpus"
+  ]
+ },
+ "altavista": {
+  "category": "defunct websites",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "AltaVista",
+  "post": "content/posts/altavista.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "cuil": {
+  "category": "forgotten stories",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "Cuil",
+  "post": "content/posts/cuil.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "delicious": {
+  "category": "defunct websites",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)",
+  "draft": null,
+  "name": "del.icio.us",
+  "post": "content/posts/delicious.md",
+  "post_exists": true,
+  "via": [
+   "hn-algolia",
+   "seed-corpus"
+  ]
+ },
+ "digg": {
+  "category": "online subcultures",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "Digg",
+  "post": "content/posts/digg.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "etoys": {
+  "category": "dead startups",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable",
+  "draft": null,
+  "name": "eToys",
+  "post": "content/posts/etoys.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "friendster": {
+  "category": "defunct websites",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "Friendster",
+  "post": "content/posts/friendster.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "geocities": {
+  "category": "strange personal homepages",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "GeoCities",
+  "post": "content/posts/geocities.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "google-plus": {
+  "category": "defunct websites",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)",
+  "draft": null,
+  "name": "Google+",
+  "post": "content/posts/google-plus.md",
+  "post_exists": true,
+  "via": [
+   "hn-algolia",
+   "seed-corpus"
+  ]
+ },
+ "google-reader": {
+  "category": "early internet products",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)",
+  "draft": null,
+  "name": "Google Reader",
+  "post": "content/posts/google-reader.md",
+  "post_exists": true,
+  "via": [
+   "hn-algolia",
+   "seed-corpus"
+  ]
+ },
+ "msn-messenger": {
+  "category": "early internet products",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "MSN Messenger",
+  "post": "content/posts/msn-messenger.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "myspace": {
+  "category": "defunct websites",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "MySpace",
+  "post": "content/posts/myspace.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "napster": {
+  "category": "early internet products",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "Napster",
+  "post": "content/posts/napster.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "newgrounds": {
+  "category": "online subcultures",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "Newgrounds",
+  "post": "content/posts/newgrounds.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "pets-com": {
+  "category": "dead startups",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "Pets.com",
+  "post": "content/posts/pets-com.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "posterous": {
+  "category": "2000s blogs",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "Posterous",
+  "post": "content/posts/posterous.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "somethingawful": {
+  "category": "old forums",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "Something Awful",
+  "post": "content/posts/somethingawful.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "stumbleupon": {
+  "category": "early internet products",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "StumbleUpon",
+  "post": "content/posts/stumbleupon.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "vine": {
+  "category": "early internet products",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+  "draft": null,
+  "name": "Vine",
+  "post": "content/posts/vine.md",
+  "post_exists": true,
+  "via": [
+   "seed-corpus"
+  ]
+ },
+ "winamp": {
+  "category": "old software",
+  "covered": "2026-08-29",
+  "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)",
+  "draft": null,
+  "name": "Winamp",
+  "post": "content/posts/winamp.md",
+  "post_exists": true,
+  "via": [
+   "hn-algolia",
+   "seed-corpus"
+  ]
+ }
+}

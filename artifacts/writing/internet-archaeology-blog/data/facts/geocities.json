@@ -1,0 +1,92 @@
+{
+ "category": "strange personal homepages",
+ "cdx_lifespan": null,
+ "data_source_mode": "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)",
+ "domain": "geocities.com",
+ "facts": [
+  {
+   "confidence": "high",
+   "source": "Wikipedia: GeoCities",
+   "text": "Founded in 1994 as Beverly Hills Internet by David Bohnett and John Rezner.",
+   "url": "https://en.wikipedia.org/wiki/GeoCities"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: GeoCities",
+   "text": "Organized user homepages into themed virtual neighborhoods with street-style addresses.",
+   "url": "https://en.wikipedia.org/wiki/GeoCities"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: GeoCities",
+   "text": "Renamed GeoCities in 1995.",
+   "url": "https://en.wikipedia.org/wiki/GeoCities"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: GeoCities",
+   "text": "Hosted millions of user-built pages; by the late 2000s the count was reported in the tens of millions.",
+   "url": "https://en.wikipedia.org/wiki/GeoCities"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: GeoCities",
+   "text": "Acquired by Yahoo! in 1999 in a stock deal reported at the time at roughly 3.6 billion US dollars.",
+   "url": "https://en.wikipedia.org/wiki/GeoCities"
+  },
+  {
+   "confidence": "high",
+   "source": "Wikipedia: GeoCities",
+   "text": "Yahoo! announced the shutdown in April 2009 and closed the US service on October 26, 2009.",
+   "url": "https://en.wikipedia.org/wiki/GeoCities"
+  },
+  {
+   "confidence": "medium",
+   "source": "Wikipedia: GeoCities / Archive Team",
+   "text": "Before closure, volunteer archivists including Archive Team raced to mirror millions of pages; a substantial portion survives in the Internet Archive.",
+   "url": "https://en.wikipedia.org/wiki/GeoCities"
+  }
+ ],
+ "hn_threads": [
+  {
+   "comments": 99,
+   "date": "2017-01-20",
+   "hn_url": "https://news.ycombinator.com/item?id=13445181",
+   "points": 416,
+   "title": "Neocities: Free, modern Geocities reboot",
+   "url": "https://neocities.org/"
+  },
+  {
+   "comments": 111,
+   "date": "2022-08-01",
+   "hn_url": "https://news.ycombinator.com/item?id=32313574",
+   "points": 269,
+   "title": "A Love Letter to Geocities Sites",
+   "url": "https://www.cameronsworld.net"
+  },
+  {
+   "comments": 65,
+   "date": "2009-10-26",
+   "hn_url": "https://news.ycombinator.com/item?id=903567",
+   "points": 250,
+   "title": "Tell HN: My 'mystery project': I couldn't sleep, so I backed up GeoCities",
+   "url": "http://www.reocities.com/"
+  },
+  {
+   "comments": 86,
+   "date": "2010-10-27",
+   "hn_url": "https://news.ycombinator.com/item?id=1840481",
+   "points": 238,
+   "title": "The Geocities Torrent (~1TB of awesomeness)",
+   "url": "http://ascii.textfiles.com/archives/2720"
+  }
+ ],
+ "name": "GeoCities",
+ "slug": "geocities",
+ "source_status": {
+  "hn_algolia": "live",
+  "wayback_cdx": "offline (URL error ([Errno 101] Network is unreachable) from web.archive.org)",
+  "wikipedia": "offline (URL error ([Errno 101] Network is unreachable) from en.wikipedia.org)"
+ },
+ "wikipedia": null
+}
