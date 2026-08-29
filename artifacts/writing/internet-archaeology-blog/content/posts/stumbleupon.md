@@ -9,7 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
-illustration: generated
+illustration: sourced-image
+image_source: bing-image-search
+image_page_url: https://wetenschap.net/gebruik-stumbleupon-nog-een-laatste-keer-voordat-het-voor-altijd-verdwijnt
+image_url: https://ts1.mm.bing.net/th?id=OIP.XQVXR8g1WCY7ylUxnTl9kwHaD2&pid=15.1
+image_retrieved: 2026-08-29
 sources:
   - Wikipedia: StumbleUpon | https://en.wikipedia.org/wiki/StumbleUpon
   - Hacker News thread: "StumbleUpon closing after 16 years, accounts can be migrated to Mix" (2018-05-24) | https://news.ycombinator.com/item?id=17143543

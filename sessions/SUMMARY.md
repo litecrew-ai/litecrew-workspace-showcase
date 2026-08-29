@@ -1,6 +1,6 @@
 # Workspace recent summary
 
-> Last updated: 2026-08-29 14:22 by Eve
+> Last updated: 2026-08-29 15:38 by Eve
 > Window: last 7 days · full history in sessions/archive/
 
 ## Active Goal snapshot (≤ 30 lines per Goal, only current state + next step)
@@ -17,6 +17,7 @@
 
 | Date       | Task                                  | Result  | Key output                                                       |
 | ---------- | ------------------------------------- | ------- | ---------------------------------------------------------------- |
+| 2026-08-29 | blog-image-search-route (goal: operate-internet-archaeology-blog) | done | PIVOT LANDED: 20/20 real historical images via Bing image search fetched live from this box (strict-matched, attributed, 844KB); Commons + render routes behind it; 87 tests, 475 checks; operator by-eye QA pending; see `2026-08-29-153803-operate-internet-archaeology-blog.md` |
 | 2026-08-29 | blog-render-profile-fix (goal: operate-internet-archaeology-blog) | done | probe-render self-test (auto fail-fast), era-anchored /web/YYYY/ fallback, RESULT.md rotation, updater-flag hardening; Eve's profile-lock diagnosis disproven by code inspection and recorded; 55 tests, 393 checks; see `2026-08-29-142231-operate-internet-archaeology-blog.md` |
 | 2026-08-29 | blog-render-timeout-fix (goal: operate-internet-archaeology-blog) | done | Chrome --timeout self-capture proven by local stalled-page reproduction; 503 backoff; /web/2/ nearest-capture; 36 tests, 393 checks; operator re-run pending; see `2026-08-29-130019-operate-internet-archaeology-blog.md` |
 | 2026-08-29 | blog-screenshot-renderer (goal: operate-internet-archaeology-blog) | done | render-don't-fetch (dead endpoint removed, hardened CDX, headless-browser screenshots, PNG guards, 24 tests, 393 checks); operator laptop run pending; see `2026-08-29-114008-operate-internet-archaeology-blog.md` |

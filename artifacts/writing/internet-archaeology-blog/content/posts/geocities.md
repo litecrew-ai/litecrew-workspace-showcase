@@ -9,7 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 1)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
-illustration: generated
+illustration: sourced-image
+image_source: bing-image-search
+image_page_url: https://glitchback.com/geocities-wild-west-early-internet/
+image_url: https://glitchback.com/wp-content/uploads/2026/03/geocities-retro-web-homepage.webp
+image_retrieved: 2026-08-29
 sources:
   - Wikipedia: GeoCities | https://en.wikipedia.org/wiki/GeoCities
   - Hacker News thread: "Tell HN: My 'mystery project': I couldn't sleep, so I backed up GeoCities" (2009-10-26) | https://news.ycombinator.com/item?id=903567

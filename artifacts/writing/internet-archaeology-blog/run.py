@@ -11,10 +11,17 @@ Usage:
                                 invocation and validate the png; run this
                                 FIRST on any new machine (a fail-fast probe
                                 also opens --fetch-screenshots)
+  python3 run.py --fetch-images
+                                image-search acquisition cascade per subject
+                                (Bing image search -> Wikimedia Commons ->
+                                probe-gated archive render); env toggles
+                                GAZETTE_BING / GAZETTE_COMMONS /
+                                GAZETTE_RENDER; every attempt is logged;
+                                failures degrade honestly
   python3 run.py --fetch-screenshots
-                                render real archived pages per subject with
-                                a headless browser (CHROME_BIN or a PATH
-                                probe; needs egress to web.archive.org;
+                                render-only alias: archived-page render per
+                                subject with a headless browser (CHROME_BIN or
+                                a PATH probe; needs egress to web.archive.org;
                                 every attempt is logged; degrades honestly)
   python3 run.py --verify       verify the built site (links, SVG, sizes,
                                 glyphs, mounted-subpath serving)
@@ -33,6 +40,7 @@ from __future__ import annotations
 import argparse
 import functools
 import http.server
+import os
 import re
 import socketserver
 import sys
@@ -47,7 +55,8 @@ from urllib.parse import urljoin
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-from pipeline import discovery, facts, screenshots, site, svgart, util, writing  # noqa: E402
+from pipeline import (discovery, facts, imagesearch, screenshots, site,  # noqa: E402
+                      svgart, util, writing)
 
 LEDGER = ROOT / "data" / "ledger.json"
 SEED = ROOT / "data" / "seed_corpus.json"
@@ -59,6 +68,7 @@ RESULT = ROOT / "RESULT.md"
 CONFIG = ROOT / "site_config.json"
 CSS_SRC = ROOT / "src" / "styles.css"
 SCREENSHOTS = ROOT / "assets" / "screenshots"
+IMAGES = ROOT / "assets" / "images"
 
 SIZE_LIMIT = 100 * 1024  # publication gate: no text file over 100KB
 # When the run log is this close to the gate, per-subject fetch lines stay on
@@ -132,7 +142,7 @@ def run_pipeline(max_new: int) -> dict:
 
     util.save_json(LEDGER, ledger)
     summary = site.build_site(SITE, POSTS, CSS_SRC, site.load_config(CONFIG),
-                              screenshots_dir=SCREENSHOTS)
+                              screenshots_dir=SCREENSHOTS, images_dir=IMAGES)
 
     log = [
         f"mode: pipeline (max {max_new} new subject(s) this run)",
@@ -155,7 +165,7 @@ def run_pipeline(max_new: int) -> dict:
 
 def rebuild_only() -> None:
     summary = site.build_site(SITE, POSTS, CSS_SRC, site.load_config(CONFIG),
-                              screenshots_dir=SCREENSHOTS)
+                              screenshots_dir=SCREENSHOTS, images_dir=IMAGES)
     log = [f"mode: rebuild-only; site rebuilt with {summary['posts']} post(s) "
            f"[{', '.join(summary['slugs']) if summary['slugs'] else 'none'}]"]
     append_result(log)
@@ -343,7 +353,161 @@ def fetch_screenshots() -> int:
     else:
         log.append("no binaries stored this run (nothing to size-report)")
     summary = site.build_site(SITE, POSTS, CSS_SRC, site.load_config(CONFIG),
-                              screenshots_dir=SCREENSHOTS)
+                              screenshots_dir=SCREENSHOTS, images_dir=IMAGES)
+    log.append(f"site rebuilt: {summary['posts']} published post(s)")
+    append_result(log)
+    print("\n".join(log))
+    return 0 if bodies_ok else 1
+
+
+# ---------------------------------------------------------------------------
+# Image-search cascade (Route 1 Bing -> Route 2 Commons -> Route 3 render)
+# ---------------------------------------------------------------------------
+
+def _route_enabled(name: str) -> bool:
+    """Env toggles: GAZETTE_BING / GAZETTE_COMMONS / GAZETTE_RENDER, default
+    on; set <NAME>=0 to skip that route in the cascade (documented in the
+    README, e.g. to run the Commons route alone from the laptop)."""
+    return str(os.environ.get(f"GAZETTE_{name}", "1")).strip().lower() not in (
+        "0", "false", "no", "off")
+
+
+def fetch_images() -> int:
+    """The image-search acquisition cascade, one subject at a time.
+
+    Route order (first route that stores a binary wins the subject):
+    1. Bing image search via the mmasync endpoint -- strict subject match,
+       murl-then-tumbnail fetch, magic/floor/width/size guards (live from
+       this build box; the plain /images/search page serves bot-filler junk
+       from this network).
+    2. Wikimedia Commons API -- license-clean, attribution fields plumbed to
+       the plate; needs wikimedia egress (the laptop), degrades honestly
+       everywhere else.
+    3. The archived-page render route (screenshots.py) -- probe-gated as
+       always: the pre-flight render probe runs first and the whole render
+       route is skipped (not just the subject) when it fails or no browser
+       exists.
+
+    Subjects with no acceptable candidate stay on the labeled generated
+    plate; post bodies are hash-checked before/after (front matter only).
+    """
+    subjects = screenshots.load_subjects(SEED)
+    posts = sorted(POSTS.glob("*.md"))
+    if not posts:
+        print("no published posts to fetch for")
+        return 0
+    fetch_date = date.today().isoformat()
+    before = {p.name: screenshots.body_sha256(p) for p in posts}
+
+    bing_on = _route_enabled("BING")
+    commons_on = _route_enabled("COMMONS")
+    render_on = _route_enabled("RENDER")
+
+    log = [
+        "mode: fetch-images (cascade: bing image search -> wikimedia commons "
+        "-> probe-gated archive render; env toggles GAZETTE_BING / "
+        "GAZETTE_COMMONS / GAZETTE_RENDER, default on)",
+        f"routes enabled: bing={bing_on} commons={commons_on} render={render_on}",
+    ]
+
+    browser = None
+    if render_on:
+        browser, browser_note = screenshots.find_browser()
+        log.append(browser_note)
+        if browser:
+            probe = screenshots.probe_render(browser)
+            verdict = "PASS" if probe["ok"] else "FAIL"
+            print(f"pre-flight render probe: {verdict} -- {probe['reason']} "
+                  f"({probe['elapsed_s']:.1f}s)")
+            log.append(f"pre-flight render probe: {verdict} -- {probe['reason']}")
+            if not probe["ok"]:
+                browser = None
+                log.append("render route skipped for every subject (probe "
+                           "failed; routes 1-2 still attempted)")
+    else:
+        log.append("render route disabled (GAZETTE_RENDER=0)")
+
+    results: list[dict] = []
+    did_work = False
+    cdx_state: dict = {"fails": 0, "tripped": False}
+    for i, p in enumerate(posts):
+        if i and did_work:
+            time.sleep(imagesearch.INTER_SUBJECT_DELAY)
+        subj = subjects.get(p.stem, {"slug": p.stem, "name": p.stem})
+        # Never-clobber across routes: a subject that already has ANY plate
+        # binary (image or render) keeps it; refetch means deleting the file.
+        if site.screenshot_file_for(SCREENSHOTS, p.stem) or \
+                imagesearch.stored_image_for(IMAGES, p.stem):
+            fname = (site.screenshot_file_for(SCREENSHOTS, p.stem)
+                     or imagesearch.stored_image_for(IMAGES, p.stem))
+            src = SCREENSHOTS if (SCREENSHOTS / fname).is_file() else IMAGES
+            results.append({
+                "slug": p.stem, "route": "render" if src is SCREENSHOTS else "skip",
+                "stored": fname, "bytes": (src / fname).stat().st_size,
+                "illustration": "sourced-image", "image_source": None,
+                "note": [f"already stored ({fname}, "
+                         f"{(src / fname).stat().st_size} bytes); fetch "
+                         "skipped (never-clobber)"],
+            })
+            print(imagesearch.result_line(results[-1]))
+            continue
+        sheet = util.load_json(FACTS_DIR / f"{p.stem}.json", {})
+        era = screenshots.era_anchor_year(sheet)
+        r: dict | None = None
+        worked = False
+        if bing_on:
+            r, worked = imagesearch.attempt_bing(
+                p, subj, IMAGES, fetch_date, era_year=era)
+            did_work = did_work or worked
+            results.append(r)
+        if not (r and r.get("stored")) and commons_on:
+            r, worked = imagesearch.attempt_commons(p, subj, IMAGES, fetch_date)
+            did_work = did_work or worked
+            results.append(r)
+        if not (r and r.get("stored")) and render_on and browser:
+            shot, worked = screenshots.attempt_subject(
+                p, subj, SCREENSHOTS, fetch_date, browser=browser,
+                cdx_state=cdx_state, era_year=era)
+            did_work = did_work or worked
+            shot["route"] = "render"
+            results.append(shot)
+        print(imagesearch.result_line(results[-1]))
+
+    bodies_ok = all(screenshots.body_sha256(p) == before[p.name] for p in posts)
+    stored = [x for x in results if x.get("stored")]
+    by_slug_stored = {x["slug"] for x in stored}
+    log.append(
+        f"subjects attempted: {len(posts)}; plates with real images: "
+        f"{len(by_slug_stored)}; degraded to generated art: "
+        f"{len(posts) - len(by_slug_stored)}"
+    )
+    log.append(
+        f"post bodies byte-identical after front-matter updates (sha256): "
+        f"{'yes' if bodies_ok else 'MISMATCH - INVESTIGATE'}"
+    )
+    if RESULT.exists() and RESULT.stat().st_size > RESULT_CONDENSE_THRESHOLD:
+        log.append(
+            f"RESULT.md near the size gate ({RESULT.stat().st_size / 1024:.1f}KB); "
+            "per-subject lines kept on stdout only"
+        )
+    else:
+        for x in results:
+            log.append(imagesearch.result_line(x))
+    if stored:
+        log.append("binary size report (assets/images unless noted):")
+        for x in stored:
+            where = ("assets/screenshots/" if x.get("route") == "render"
+                     else "assets/images/")
+            log.append(f'  {where}{x["stored"]} -- {x["bytes"]} bytes '
+                       f'[via {x.get("route")}]')
+        over = [x for x in stored if x["bytes"] > 100 * 1024]
+        if over:
+            log.append(f"  OVER THE 100KB CAP (individually flagged): "
+                       + ", ".join(x["stored"] for x in over))
+    else:
+        log.append("no binaries stored this run (nothing to size-report)")
+    summary = site.build_site(SITE, POSTS, CSS_SRC, site.load_config(CONFIG),
+                              screenshots_dir=SCREENSHOTS, images_dir=IMAGES)
     log.append(f"site rebuilt: {summary['posts']} published post(s)")
     append_result(log)
     print("\n".join(log))
@@ -416,9 +580,12 @@ def verify() -> int:
         page = SITE / "posts" / f'{m["slug"]}.html'
         check(f"page exists for {m['slug']}", page.exists())
         fm_mode = str(m.get("illustration", "") or "")
-        check(f"{m['slug']}: illustration mode declared (screenshot|generated)",
-              fm_mode in ("screenshot", "generated"), fm_mode or "missing")
+        check(f"{m['slug']}: illustration mode declared "
+              "(screenshot|sourced-image|generated)",
+              fm_mode in ("screenshot", "sourced-image", "generated"),
+              fm_mode or "missing")
         shot_slug = site.screenshot_file_for(SCREENSHOTS, m["slug"])
+        img_slug = site.image_file_for(IMAGES, m["slug"])
         if page.exists():
             txt = page.read_text(encoding="utf-8")
             if '<figure class="hero">' in txt and "</figure>" in txt:
@@ -454,9 +621,46 @@ def verify() -> int:
                       str(m.get("screenshot_fetched", "")) in txt)
                 check(f"{m['slug']}: screenshot binary copied into site/assets",
                       (SITE / "assets" / shot_slug).is_file())
+            elif fm_mode == "sourced-image" and img_slug:
+                commons = str(m.get("image_source", "")) == "wikimedia-commons"
+                want_label = ("via Wikimedia Commons" if commons
+                              else "historical image: Bing image search")
+                check(f"{m['slug']}: sourced plate renders an <img>",
+                      '<div class="hero-mount"><img' in txt)
+                check(f"{m['slug']}: sourced plate label visible", want_label in txt)
+                check(f"{m['slug']}: generated label absent on sourced plate",
+                      not gen_label)
+                check(f"{m['slug']}: no screenshot label on sourced plate",
+                      not shot_label)
+                check(f"{m['slug']}: sourced provenance fields in front matter",
+                      bool(m.get("image_source"))
+                      and bool(m.get("image_page_url"))
+                      and bool(m.get("image_url"))
+                      and bool(m.get("image_retrieved")))
+                # Attribution must be visible, not just in front matter: the
+                # full source-page URL rides on the page (provenance link).
+                # URLs with query strings render HTML-escaped (& -> &amp;),
+                # so either the raw or the escaped form counts as visible.
+                page_url = str(m.get("image_page_url", ""))
+                check(f"{m['slug']}: source page url visible on the plate",
+                      page_url in txt
+                      or _xml_escape(page_url) in txt)
+                check(f"{m['slug']}: retrieval date on the plate",
+                      str(m.get("image_retrieved", "")) in txt)
+                if commons:
+                    check(f"{m['slug']}: commons license printed on the plate",
+                          bool(m.get("image_license"))
+                          and str(m["image_license"]) in txt)
+                    check(f"{m['slug']}: commons author printed on the plate"
+                          " (author or explicit 'not recorded')",
+                          (str(m.get("image_author", "")) and
+                           str(m["image_author"]) in txt)
+                          or "author not recorded" in txt)
+                check(f"{m['slug']}: sourced binary copied into site/assets",
+                      (SITE / "assets" / img_slug).is_file())
             else:
                 # Generated plate (the default, and the honest fallback when
-                # a screenshot post's binary is missing).
+                # a binary-backed post's file is missing).
                 check(f"{m['slug']}: inline <svg> present", "<svg" in hero)
                 check(f"{m['slug']}: generated plate label visible", gen_label)
                 check(f"{m['slug']}: no screenshot label on generated plate",
@@ -483,7 +687,7 @@ def verify() -> int:
         check(f"{m['slug']}: standalone svg asset exists", asset.exists())
 
     # Orphan-binary guard: a stored screenshot binary with no screenshot-mode
-    # post would be an unlabeled image in the tree.
+    # post would be an unlabeled image in the tree; same for sourced images.
     shot_mode_slugs = {m["slug"] for m in metas
                        if str(m.get("illustration", "")) == "screenshot"}
     orphans = []
@@ -494,6 +698,17 @@ def verify() -> int:
                     orphans.append(f.name)
     check("no orphan screenshot binaries (stored binary must match a "
           "screenshot-mode post)", not orphans, "; ".join(orphans[:3]))
+    sourced_mode_slugs = {
+        m["slug"] for m in metas
+        if str(m.get("illustration", "")) == "sourced-image"}
+    orphan_images = []
+    if IMAGES.is_dir():
+        for f in sorted(IMAGES.iterdir()):
+            if f.is_file() and f.suffix.lower() in site.IMAGE_EXTS:
+                if f.stem not in sourced_mode_slugs:
+                    orphan_images.append(f.name)
+    check("no orphan sourced-image binaries (stored binary must match a "
+          "sourced-image post)", not orphan_images, "; ".join(orphan_images[:3]))
 
     # About and categories pages exist, styled, and link back.
     about = SITE / "about.html"
@@ -503,8 +718,14 @@ def verify() -> int:
         check("about links index", 'href="index.html"' in atxt)
         check("about links categories", 'href="categories.html"' in atxt)
         check("about states the illustration policy (screenshots vs generated)",
-              "screenshots versus generated plates" in atxt
+              ("screenshots, sourced images, generated plates" in atxt
+               or "screenshots versus generated plates" in atxt)
               and "Screenshot: Wayback Machine" in atxt)
+        check("about states the sourced-image policy (search route "
+              "attribution, Commons licensing, swap path)",
+              "Historical image: Bing image search" in atxt
+              and "Via Wikimedia Commons" in atxt
+              and "rights" in atxt)
     cats_page = SITE / "categories.html"
     check("categories.html exists", cats_page.exists())
     if cats_page.exists():
@@ -627,9 +848,10 @@ def verify() -> int:
         check(f"svg deterministic for {probe}", regen.strip() == on_disk)
 
     # Publication gates across every text file in the artifact tree.
-    # Screenshot binaries (png/jpg under assets/screenshots or site/assets)
-    # are the one deliberate exception to the size gate: allowed as image
-    # assets, but individually size-reported so the operator sees them.
+    # Image binaries (png/jpg/jpeg/gif/webp under assets/screenshots,
+    # assets/images, or site/assets) are the one deliberate exception to the
+    # size gate: allowed as image assets, but individually size-reported so
+    # the operator sees them.
     violations = []
     oversize = []
     binaries: list[str] = []
@@ -640,8 +862,9 @@ def verify() -> int:
                 content = p.read_text(encoding="utf-8")
             except (UnicodeDecodeError, ValueError):
                 rel = p.relative_to(ROOT).as_posix()
-                if (p.suffix.lower() in (".png", ".jpg")
+                if (p.suffix.lower() in (".png", ".jpg", ".jpeg", ".gif", ".webp")
                         and (rel.startswith("assets/screenshots/")
+                             or rel.startswith("assets/images/")
                              or rel.startswith("site/assets/"))):
                     binaries.append(f"{rel} -- {p.stat().st_size} bytes")
                 else:
@@ -656,14 +879,14 @@ def verify() -> int:
           "; ".join(violations[:5]))
     check(f"size gate (no text file over {SIZE_LIMIT // 1024}KB)", not oversize,
           "; ".join(oversize[:5]))
-    check("binary gate (only png/jpg screenshot assets; no rogue binaries)",
-          not rogue_binaries, "; ".join(rogue_binaries[:5]))
+    check("binary gate (only image assets in the asset dirs; no rogue "
+          "binaries)", not rogue_binaries, "; ".join(rogue_binaries[:5]))
     if binaries:
         lines.append("binary asset size report: " + "; ".join(binaries))
         record.append("binary asset size report: " + "; ".join(binaries))
     else:
-        lines.append("binary asset size report: no screenshot binaries stored")
-        record.append("binary asset size report: no screenshot binaries stored")
+        lines.append("binary asset size report: no image binaries stored")
+        record.append("binary asset size report: no image binaries stored")
 
     # Ledger sanity: every published post is covered.
     ledger = util.load_json(LEDGER, {})
@@ -674,16 +897,28 @@ def verify() -> int:
     lines.append(f"verify result: {'ALL CHECKS PASS' if ok else 'FAILURES: ' + ', '.join(failures)}")
     n_checks = sum(1 for l in lines if l.startswith(("PASS -", "FAIL -")))
     shot_n = sum(1 for m in metas if str(m.get("illustration", "")) == "screenshot")
-    gen_n = sum(1 for m in metas if str(m.get("illustration", "")) != "screenshot")
+    src_n = sum(1 for m in metas
+                if str(m.get("illustration", "")) == "sourced-image")
+    gen_n = sum(1 for m in metas if str(m.get("illustration", "")) not in
+                ("screenshot", "sourced-image"))
     record.insert(0, f"mode: verify -- {n_checks} checks, "
                      f"{'ALL PASS' if ok else 'FAILURES: ' + ', '.join(failures[:6])}")
     record.insert(1, f"posts: {len(metas)}; illustration modes: {shot_n} "
-                     f"screenshot, {gen_n} generated (labels on every page)")
+                     f"screenshot, {src_n} sourced-image, {gen_n} generated "
+                     "(labels on every page)")
     record.append("full per-check listing printed to stdout; this record "
                   "carries section outcomes, methods, and all failures")
     append_result(record)
     print("\n".join(lines))
     return 0 if ok else 1
+
+
+def _xml_escape(text: str) -> str:
+    """The escaping the site builder applies to rendered text/attribute
+    values (so verifiers can compare URLs against what is actually in the
+    page source)."""
+    from xml.sax.saxutils import escape
+    return escape(text)
 
 
 def _link_targets(html_text: str) -> list[str]:
@@ -740,7 +975,7 @@ def _clean_state_rebuild_identical() -> tuple[bool, str]:
     with tempfile.TemporaryDirectory(prefix="gazette-verify-") as tmp:
         scratch = Path(tmp) / "site"
         site.build_site(scratch, POSTS, CSS_SRC, site.load_config(CONFIG),
-                        screenshots_dir=SCREENSHOTS)
+                        screenshots_dir=SCREENSHOTS, images_dir=IMAGES)
         tracked = sorted(p.relative_to(SITE) for p in SITE.rglob("*") if p.is_file())
         built = sorted(p.relative_to(scratch) for p in scratch.rglob("*") if p.is_file())
         if tracked != built:
@@ -875,7 +1110,7 @@ def _mounted_subpath_test(cfg: dict) -> tuple[list[str], list[str]]:
         cfg_b = dict(cfg)
         cfg_b["path_prefix"] = "/site/"
         site.build_site(root_b / "site", POSTS, CSS_SRC, cfg_b,
-                        screenshots_dir=SCREENSHOTS)
+                        screenshots_dir=SCREENSHOTS, images_dir=IMAGES)
         httpd = _serve_dir(root_b)
         try:
             opener = urllib.request.build_opener()
@@ -970,9 +1205,17 @@ def main() -> int:
                     help="max new subjects to draft this run (default 1)")
     ap.add_argument("--rebuild-only", action="store_true",
                     help="skip discovery; just rebuild the site")
+    ap.add_argument("--fetch-images", action="store_true",
+                    help="image-search acquisition cascade per subject: "
+                         "Bing image search (strict subject match, "
+                         "attributed), then Wikimedia Commons (license-"
+                         "clean), then the probe-gated archived-page render; "
+                         "env toggles GAZETTE_BING / GAZETTE_COMMONS / "
+                         "GAZETTE_RENDER (default on); failures degrade to "
+                         "labeled generated art")
     ap.add_argument("--fetch-screenshots", action="store_true",
-                    help="render real archived pages per subject with a "
-                         "headless browser (CHROME_BIN or PATH probe; "
+                    help="render-only alias: archived-page render per subject "
+                         "with a headless browser (CHROME_BIN or PATH probe; "
                          "web.archive.org egress required); every attempt "
                          "logged; failures degrade to labeled generated art; "
                          "a fail-fast render probe runs first")
@@ -991,6 +1234,8 @@ def main() -> int:
         return verify()
     if args.probe_render:
         return probe_render_mode()
+    if args.fetch_images:
+        return fetch_images()
     if args.fetch_screenshots:
         return fetch_screenshots()
     if args.rebuild_only:

@@ -9,7 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 1)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)"
 generated: 2026-08-29
-illustration: generated
+illustration: sourced-image
+image_source: bing-image-search
+image_page_url: https://www.mydigit.cn/thread-381843-1-1.html
+image_url: https://ts3.mm.bing.net/th?id=OIP.NqUvNI2SE9c2LIjwb_L3ZAHaHa&pid=15.1
+image_retrieved: 2026-08-29
 sources:
   - Wikipedia: Winamp | https://en.wikipedia.org/wiki/Winamp
   - Hacker News thread: "Winamp shutting down on December 20th, 2013" (2013-11-20) | https://news.ycombinator.com/item?id=6769721

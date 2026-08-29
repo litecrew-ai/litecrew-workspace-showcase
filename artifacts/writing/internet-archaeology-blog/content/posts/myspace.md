@@ -9,7 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
-illustration: generated
+illustration: sourced-image
+image_source: bing-image-search
+image_page_url: https://www.webdesignmuseum.org/gallery/myspace-in-2006
+image_url: https://ts2.mm.bing.net/th?id=OIP.DsEEr4mfbh3oqMAOG97YqgHaIH&pid=15.1
+image_retrieved: 2026-08-29
 sources:
   - Wikipedia: Myspace | https://en.wikipedia.org/wiki/Myspace
   - Hacker News thread: "Myspace lost all the music its users uploaded between 2003 and 2015" (2019-03-18) | https://news.ycombinator.com/item?id=19417640

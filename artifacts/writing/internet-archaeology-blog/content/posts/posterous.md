@@ -9,7 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
-illustration: generated
+illustration: sourced-image
+image_source: bing-image-search
+image_page_url: https://brudtkuhl.com/blog/how-to-move-from-posterous-to-wordpress/
+image_url: https://cdn.brudtkuhl.com/48w/uploads/2013/02/Screen-Shot-2013-02-16-at-10.58.51-AM.png
+image_retrieved: 2026-08-29
 sources:
   - Wikipedia: Posterous | https://en.wikipedia.org/wiki/Posterous
   - Hacker News thread: "Posterous acquired by Twitter" (2012-03-12) | https://news.ycombinator.com/item?id=3695407

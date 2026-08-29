@@ -9,7 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 1)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)"
 generated: 2026-08-29
-illustration: generated
+illustration: sourced-image
+image_source: bing-image-search
+image_page_url: https://www.weste.net/2013/3-14/89632.html
+image_url: http://www.weste.net/uploadfile/2013/0314/20130314101042886.jpg
+image_retrieved: 2026-08-29
 sources:
   - Wikipedia: Google Reader | https://en.wikipedia.org/wiki/Google_Reader
   - Hacker News thread: "Google Reader shutting down" (2013-03-13) | https://news.ycombinator.com/item?id=5371725

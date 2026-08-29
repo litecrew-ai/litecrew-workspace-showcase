@@ -9,7 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)"
 generated: 2026-08-29
-illustration: generated
+illustration: sourced-image
+image_source: bing-image-search
+image_page_url: https://www.smithsonianmag.com/innovation/aol-instant-messenger-taught-us-how-to-communicate-in-modern-world-180967484/
+image_url: https://th-thumbnailer.cdn-si-edu.com/SbVp7vVYvvRIOM5G71rsm9Yzilo=/fit-in/1072x0/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/filer/00/26/0026f6bb-5cc0-4942-aa8e-e2b1ab7990d1/file-20171125-21816-1p88t1j.jpeg
+image_retrieved: 2026-08-29
 sources:
   - Wikipedia: AOL Instant Messenger | https://en.wikipedia.org/wiki/AOL_Instant_Messenger
   - Hacker News thread: "AIM will shut down after 20 years" (2017-10-06) | https://news.ycombinator.com/item?id=15417019

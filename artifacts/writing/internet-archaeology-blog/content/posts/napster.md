@@ -9,7 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
-illustration: generated
+illustration: sourced-image
+image_source: bing-image-search
+image_page_url: https://www.webdesignmuseum.org/gallery/napster-2000
+image_url: https://ts4.mm.bing.net/th?id=OIP.ofp47cJnX68_drQ5XT-ueQHaGL&pid=15.1
+image_retrieved: 2026-08-29
 sources:
   - Wikipedia: Napster | https://en.wikipedia.org/wiki/Napster
   - Wikipedia: A&M Records, Inc. v. Napster, Inc. | https://en.wikipedia.org/wiki/A%26M_Records,_Inc._v._Napster,_Inc.

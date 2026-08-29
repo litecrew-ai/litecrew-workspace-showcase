@@ -9,7 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live)"
 generated: 2026-08-29
-illustration: generated
+illustration: sourced-image
+image_source: bing-image-search
+image_page_url: https://www.techtudo.com.br/noticias/2010/12/como-usar-o-delicious.ghtml
+image_url: https://s2-techtudo.glbimg.com/N0y3DBtjfQCe99aVI2TNLLbmspU=/0x0:600x126/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_08fbf48bc0524877943fe86e43087e7a/internal_photos/bs/2021/y/q/8w2ifzQxaVczRcz1nEBQ/2010-12-06-delicious-post-3.jpg
+image_retrieved: 2026-08-29
 sources:
   - Wikipedia: Delicious (website) | https://en.wikipedia.org/wiki/Delicious_(website)
   - Hacker News thread: "Yahoo is Shutting Down Del.icio.us" (2010-12-16) | https://news.ycombinator.com/item?id=2013248

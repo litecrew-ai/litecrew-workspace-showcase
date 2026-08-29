@@ -301,6 +301,9 @@ def illustration_for(m: dict) -> str:
 
 
 SCREENSHOT_EXTS = (".png", ".jpg")
+# Sourced-image plates (image-search / Commons route): the extensions the
+# binary guards accept. Same copying rules as screenshots.
+IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
 def screenshot_file_for(screenshots_dir: Path | None, slug: str) -> str | None:
@@ -313,12 +316,23 @@ def screenshot_file_for(screenshots_dir: Path | None, slug: str) -> str | None:
     return None
 
 
-def art_for(m: dict, cfg: dict, prefix: str,
-            screenshots_dir: Path | None) -> tuple[str, str]:
+def image_file_for(images_dir: Path | None, slug: str) -> str | None:
+    """Name of a stored sourced-image binary for this slug, or None."""
+    if not images_dir:
+        return None
+    for ext in IMAGE_EXTS:
+        if (images_dir / f"{slug}{ext}").is_file():
+            return f"{slug}{ext}"
+    return None
+
+
+def art_for(m: dict, cfg: dict, prefix: str, screenshots_dir: Path | None,
+            images_dir: Path | None = None) -> tuple[str, str]:
     """(mode, html) for the hero/card art. The rendered mode is the truth:
-    "screenshot" only when the front matter says so AND the stored binary
-    exists -- a missing binary degrades to the generated SVG, labeled as
-    such. A generated plate can never masquerade as a screenshot."""
+    a binary-backed mode renders only when the front matter says so AND the
+    stored binary exists -- a missing binary degrades to the generated SVG,
+    labeled as such. A generated plate can never masquerade as a screenshot
+    or a sourced historical image."""
     if str(m.get("illustration", "")) == "screenshot":
         fname = screenshot_file_for(screenshots_dir, m["slug"])
         if fname:
@@ -327,12 +341,25 @@ def art_for(m: dict, cfg: dict, prefix: str,
             img = (f'<img src="{_url(cfg, prefix, "assets/" + fname)}" '
                    f'alt="{escape(alt)}"/>')
             return "screenshot", img
+    if str(m.get("illustration", "")) == "sourced-image":
+        fname = image_file_for(images_dir, m["slug"])
+        if fname:
+            if str(m.get("image_source", "")) == "wikimedia-commons":
+                alt = (f"Historical image of {m.get('title', m['slug'])} via "
+                       f"Wikimedia Commons")
+            else:
+                alt = (f"Historical image of {m.get('title', m['slug'])} found "
+                       f"via Bing image search")
+            img = (f'<img src="{_url(cfg, prefix, "assets/" + fname)}" '
+                   f'alt="{escape(alt)}"/>')
+            return "sourced-image", img
     return "generated", illustration_for(m)
 
 
 def _plate_caption(m: dict, mode: str, exhibit_no: int) -> str:
     """The visible plate label (D11): the mode is printed on the page, with
-    the archive provenance for screenshots."""
+    the provenance for screenshots and the source attribution for sourced
+    historical images."""
     if mode == "screenshot":
         ts = str(m.get("screenshot_timestamp", "") or "")
         fd = str(m.get("screenshot_fetched", "") or "")
@@ -348,6 +375,25 @@ def _plate_caption(m: dict, mode: str, exhibit_no: int) -> str:
             label += f", fetched {fd}"
         label += ("; bytes actually retrieved from the Internet Archive for "
                   "this subject's url, not a reconstruction")
+        return label
+    if mode == "sourced-image":
+        rd = str(m.get("image_retrieved", "") or "")
+        page = str(m.get("image_page_url", "") or "")
+        host = page.split("/")[2] if page.count("/") >= 2 else page
+        if str(m.get("image_source", "")) == "wikimedia-commons":
+            lic = str(m.get("image_license", "") or "license not recorded")
+            label = (f"plate {exhibit_no:02d} -- via Wikimedia Commons, {lic}")
+            author = str(m.get("image_author", "") or "")
+            # Author credit printed even when the file records none -- honest
+            # absence beats a silently missing attribution segment.
+            label += f", author {author}" if author else ", author not recorded"
+        else:
+            label = (f"plate {exhibit_no:02d} -- historical image: Bing image "
+                     f"search, source page {host}")
+        if rd:
+            label += f", retrieved {rd}"
+        label += ("; a found historical image attributed to its source page, "
+                  "not the gazette's own render -- rights live with the source")
         return label
     return (
         f"plate {exhibit_no:02d} -- generated memorial art: a procedural "
@@ -404,6 +450,7 @@ def _dispatch_row(cfg: dict, m: dict) -> str:
 
 
 def _provenance_html(m: dict, exhibit_no: int, mode: str) -> str:
+    linked_row = ""
     if mode == "screenshot":
         illus = "screenshot -- Wayback Machine"
         if m.get("screenshot_timestamp"):
@@ -412,6 +459,14 @@ def _provenance_html(m: dict, exhibit_no: int, mode: str) -> str:
             illus += ", %s" % m["screenshot_capture_mode"]
         if m.get("screenshot_fetched"):
             illus += ", fetched %s" % m["screenshot_fetched"]
+    elif mode == "sourced-image":
+        if str(m.get("image_source", "")) == "wikimedia-commons":
+            illus = ("sourced image -- Wikimedia Commons (%s)"
+                     % (m.get("image_license") or "license not recorded"))
+        else:
+            illus = "sourced image -- Bing image search"
+        if m.get("image_retrieved"):
+            illus += ", retrieved %s" % m["image_retrieved"]
     else:
         illus = "generated memorial art (procedural svg)"
     rows = [
@@ -423,6 +478,20 @@ def _provenance_html(m: dict, exhibit_no: int, mode: str) -> str:
         rows.append(("Screenshot of", str(m["screenshot_url"])))
     if mode == "screenshot" and m.get("screenshot_archived_url"):
         rows.append(("Rendered from", str(m["screenshot_archived_url"])))
+    if mode == "sourced-image":
+        # Attribution must be visible (and clickable) on every sourced plate:
+        # the full source-page URL rides in the provenance box as a link.
+        if m.get("image_source"):
+            rows.append(("Found via", str(m["image_source"])))
+        if m.get("image_page_url"):
+            page = str(m["image_page_url"])
+            linked_row = (
+                f'<tr><td>Source page:</td><td><a href={quoteattr(page)} '
+                f'rel="noopener">{escape(page)}</a></td></tr>')
+        if m.get("image_url"):
+            rows.append(("Image url", str(m["image_url"])))
+        if m.get("image_author"):
+            rows.append(("Image author", str(m["image_author"])))
     rows += [
         ("Generated", m.get("generated", "not recorded")),
         ("Generator", m.get("generator", "not recorded")),
@@ -434,7 +503,7 @@ def _provenance_html(m: dict, exhibit_no: int, mode: str) -> str:
     )
     return (
         '<section class="exhibit">\n<h2 class="exhibit-title">PROVENANCE</h2>\n'
-        f'<table class="prov-table">{trs}</table>\n</section>'
+        f'<table class="prov-table">{trs}{linked_row}</table>\n</section>'
     )
 
 
@@ -554,18 +623,32 @@ def _about_markdown() -> str:
         "Dramatic tone, never fiction. Numbers that cannot be traced to a cited source "
         "do not appear, or appear hedged with the source named. Sources are printed as "
         "an exhibit label at the foot of every dispatch.\n\n"
-        "## Illustrations: screenshots versus generated plates\n\n"
-        "Every plate carries its mode as a visible label, and the two modes never "
+        "## Illustrations: screenshots, sourced images, generated plates\n\n"
+        "Every plate carries its mode as a visible label, and the modes never "
         "blend. \"Screenshot: Wayback Machine\" means the image is made of bytes "
-        "actually fetched from the Internet Archive for the subject's real URL; the "
-        "snapshot timestamp and the fetch date are printed on the plate and recorded "
-        "in the post's provenance box. \"Generated memorial art\" means the plate is "
-        "the gazette's own procedural SVG, seeded by the post slug -- a memorial "
-        "card, not a reproduction. There is no middle state: when the archive "
-        "cannot be reached, the gazette ships the generated plate and says so "
-        "rather than passing anything else off as a screenshot. Real screenshots "
-        "can be refreshed at any time with `python3 run.py --fetch-screenshots` "
-        "(needs egress to web.archive.org).\n\n"
+        "a real browser rendered from the subject's archived page; the snapshot "
+        "timestamp and the fetch date are printed on the plate and recorded in "
+        "the post's provenance box. \"Historical image: Bing image search\" means "
+        "a real image found through image search, stored only when its title or "
+        "source page actually names the subject, and attributed on the plate to "
+        "the page it came from -- it is a found historical image, not the "
+        "gazette's own render, and rights in it live with that source. \"Via "
+        "Wikimedia Commons\" means a license-clean file from that repository, "
+        "with the license and author printed on the plate as its terms require. "
+        "\"Generated memorial art\" means the plate is the gazette's own "
+        "procedural SVG, seeded by the post slug -- a memorial card, not a "
+        "reproduction. There is no middle state: when no route yields an "
+        "acceptable, attributable image, the gazette ships the generated plate "
+        "and says so rather than passing anything else off as a picture of the "
+        "subject.\n\n"
+        "On rights: images found through search are of varying rights. The "
+        "gazette's posture is attribution-first -- every sourced plate names "
+        "and links its source page -- and every sourced image can be swapped "
+        "for a license-clean Commons file or removed without touching the "
+        "written record. Plates can be refreshed with `python3 run.py "
+        "--fetch-images` (search and Commons routes) or `--fetch-screenshots` "
+        "(the archive render route, which needs a headless browser and egress "
+        "to web.archive.org).\n\n"
         "## The site\n\n"
         "The design follows a museum-of-the-early-web brief: a modern editorial chrome "
         "around period artifacts. The illustrations, the 468x60 banner in the footer, "
@@ -588,7 +671,8 @@ def _about_markdown() -> str:
 
 def build_site(site_dir: Path, posts_dir: Path, css_src: Path | None = None,
                config: dict | None = None,
-               screenshots_dir: Path | None = None) -> dict:
+               screenshots_dir: Path | None = None,
+               images_dir: Path | None = None) -> dict:
     """Build index, about, categories, rss, and one page per post.
     Returns a build summary."""
     cfg = dict(DEFAULT_CONFIG)
@@ -614,6 +698,12 @@ def build_site(site_dir: Path, posts_dir: Path, css_src: Path | None = None,
         for shot in sorted(screenshots_dir.iterdir()):
             if shot.is_file() and shot.suffix.lower() in SCREENSHOT_EXTS:
                 (site_dir / "assets" / shot.name).write_bytes(shot.read_bytes())
+    # Sourced-image binaries (image-search / Commons route): same rule --
+    # byte-identical copies of never-clobbered source assets.
+    if images_dir and images_dir.is_dir():
+        for img in sorted(images_dir.iterdir()):
+            if img.is_file() and img.suffix.lower() in IMAGE_EXTS:
+                (site_dir / "assets" / img.name).write_bytes(img.read_bytes())
 
     # Post pages.
     for idx, m in enumerate(posts):
@@ -622,7 +712,7 @@ def build_site(site_dir: Path, posts_dir: Path, css_src: Path | None = None,
         exhibit_no = total - idx
         newer = posts[idx - 1] if idx > 0 else None
         older = posts[idx + 1] if idx + 1 < total else None
-        mode, art_html = art_for(m, cfg, "../", screenshots_dir)
+        mode, art_html = art_for(m, cfg, "../", screenshots_dir, images_dir)
         post_body = (
             f'<div class="wrap">\n{_site_head(cfg, "../", "index")}\n<main>\n'
             f'<article class="post">\n'
@@ -656,7 +746,8 @@ def build_site(site_dir: Path, posts_dir: Path, css_src: Path | None = None,
         by_cat.setdefault(m.get("category") or "uncategorized", []).append(m)
 
     if posts:
-        lead_mode, lead_art = art_for(posts[0], cfg, "", screenshots_dir)
+        lead_mode, lead_art = art_for(posts[0], cfg, "", screenshots_dir,
+                                      images_dir)
         cards_html = (
             '<section class="cards" aria-label="latest dispatch">\n'
             + _card(cfg, posts[0], lead=True, art_html=lead_art)

@@ -9,7 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
-illustration: generated
+illustration: sourced-image
+image_source: bing-image-search
+image_page_url: https://forums.somethingawful.com/showthread.php?threadid=3837016&userid=27691
+image_url: https://ts4.mm.bing.net/th?id=OIP.tJI7woKXDU9VEa0GBgGeZQHaDa&pid=15.1
+image_retrieved: 2026-08-29
 sources:
   - Wikipedia: Something Awful | https://en.wikipedia.org/wiki/Something_Awful
   - Something Awful | https://www.somethingawful.com/

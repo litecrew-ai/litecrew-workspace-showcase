@@ -3,7 +3,7 @@ subject: writing
 slug: post-generation-pipeline
 tags: [content-pipeline, python-stdlib, static-site, deterministic-generation, editorial-split]
 related_goals: [internet-archaeology-blog]
-related_tasks: [blog-v0-pipeline, blog-design-overhaul, blog-publish-all, blog-screenshots-and-paths, blog-screenshot-renderer, blog-render-timeout-fix, blog-render-profile-fix]
+related_tasks: [blog-v0-pipeline, blog-design-overhaul, blog-publish-all, blog-screenshots-and-paths, blog-screenshot-renderer, blog-render-timeout-fix, blog-render-profile-fix, blog-image-search-route]
 related_knowledge: [writing/dead-web-source-catalog.md]
 last_verified_date: 2026-08-29
 status: active
@@ -314,6 +314,49 @@ needs an image-mode equivalent. What generalized:
     after, never reused) is provable offline with a recorder "browser"
     script that dumps its argv -- no real browser or network needed.
 
+13. **The acquisition cascade: search -> license-clean repository -> render,
+    each route with its own truthfulness contract** (from the image-search
+    run, 2026-08-29, which landed real plates for 20/20 subjects from a
+    network where the archive is unreachable). When one acquisition route is
+    environment-blocked, order the alternatives by (a) reachability from the
+    build box, (b) rights cleanliness, (c) fidelity -- here: Bing image
+    search (live, varying rights, attribution required) -> Wikimedia Commons
+    (license-clean, laptop-only from here) -> the archived-page render
+    (highest fidelity, probe-gated, needs browser + archive egress). One
+    CLI mode runs the cascade per subject; env toggles disable routes for a
+    run; the first route that stores a binary wins the subject; never-
+    clobber spans routes (a subject with any stored plate binary is skipped
+    whole). What kept the truthfulness law intact on the search route:
+    (a) a THIRD plate mode -- `sourced-image` -- distinct from `screenshot`
+    (reserved for our own archive renders) and from `generated`; the front
+    matter carries `image_source`, source page, image URL, retrieval date
+    (license + author for the repository route), and the plate label says
+    "historical image: Bing image search" / "via Wikimedia Commons, license"
+    with the source-page host; (b) STRICT subject match before anything is
+    fetched -- a word-boundary form of the subject name/alias/domain must
+    appear in the candidate's RAW title or source page URL (near-miss
+    spellings like "Geocites" reject; short aliases like "aim" match only on
+    word boundaries so "claim" can never match; non-ASCII title runs count
+    as separators -- ASCII-folding the title FIRST glued "GeoCities"+CJK
+    into a non-match, so match on raw and fold only for storage);
+    (c) guards shared by both routes -- magic bytes for four formats,
+    parseable dimensions (jpeg SOF / png IHDR / gif LSD / webp VP8+VP8L+
+    VP8X -- mind that a VP8L file under 30 bytes trips an outer length
+    guard), width floor, size floor against spacers, and a hard cap;
+    (d) fixture-test the parser against a sanitized real fetch (ASCII-fold
+    the fixture or it fails the glyph gate; re-serialize candidate JSON with
+    ensure_ascii + HTML-escape so the file shape matches the live m="..."
+    attributes exactly); (e) a verify suite that asserts mode/binary/label
+    agreement AND visible attribution (the source-page URL link, accepting
+    the HTML-escaped form -- a URL with a query string renders as &amp; and
+    a literal substring check fails otherwise). Two debugging traps worth
+    remembering: a plain function saved on a TestCase class attribute comes
+    back as a BOUND METHOD on instance access (the descriptor protocol --
+    it silently poisons restore-after-patch test code; hold originals in
+    locals + addCleanup), and real search-result image URLs contain raw
+    spaces/control characters (percent-encode before http.client, or the
+    batch dies mid-run with InvalidURL).
+
 ### Subpath mount robustness (from the same run)
 
 User report: "style missing when I mount the site as a relative path like
@@ -385,6 +428,15 @@ deterministic scaffolding is honest about being scaffolding.
   hang itself is NOT reproducible on this box (no running GUI Chrome) -- the
   operator's 10-second --probe-render run is the confirming step; see the
   artifact RESULT.md entry for 2026-08-29 (blog-render-profile-fix).
+- Image-search route (2026-08-29): the cascade ran LIVE from the build box
+  and stored strict-matched, attributed, guard-passing images for 20/20
+  subjects (816969 bytes total, all under the 100KB cap; per-subject table
+  in the artifact RESULT.md); post bodies proven byte-identical (sha256)
+  across the additive front-matter stamps; 87 unit tests green (32 new, on
+  the sanitized real-fetch fixture and a loopback search+image server);
+  --verify 475 checks ALL PASS with the sourced-image mode/label/attribution
+  assertions. The Wikimedia Commons route is implemented and fixture-tested
+  but laptop-only from this network (SSL handshake timeout recorded).
 
 ## Boundaries and counter-examples
 
@@ -436,6 +488,15 @@ deterministic scaffolding is honest about being scaffolding.
       invocation exposed as a CLI mode AND auto-run fail-fast before the
       batch, and a README troubleshooting table keyed to observed stderr
       signatures.
+- [ ] For image acquisition: order routes by reachability/rights/fidelity
+      behind one cascade CLI with per-route env toggles; give each route
+      its own honest plate mode and label; strict-match candidates against
+      the subject (raw title, word boundaries, alias and domain) before
+      fetching; guard binaries (magic, dimensions, width floor, size floor,
+      cap); store source-page attribution with the binary and render it as
+      a visible link; fixture-test parsers against sanitized real fetches;
+      percent-encode fetched URLs before the request and ASCII-validate
+      them before storage.
 - [ ] For mounts: one URL resolver for all internal refs; page-relative
       default + config-driven prefix mode; a mounted-subpath HTTP browse
       test in verify for both modes.
@@ -456,3 +517,4 @@ deterministic scaffolding is honest about being scaffolding.
 | 2026-08-29 | Truthful-images section rewritten for the render-don't-fetch strategy: dead-endpoint evidence from a reachable network, subprocess browser invocation with process-group timeout, hang-vs-fast-fail forgery asymmetry and the layered payload guards with locally calibrated size floor, resolve-browser-once degradation, CDX latency budget with circuit breaker, and testing the untestable path without pretending | tasks/blog-screenshot-renderer.md |
 | 2026-08-29 | Render-timeout lesson merged: virtual-time-budget alone never captures while a load is pending (the 20/20 dead-render laptop run), chrome's own --timeout is the capture mechanism (blank-frame caveat on new headless), stderr tails for self-diagnosis, the nearest-capture /web/2/ fallback with timestamp recovery and honest labeling, and 503 backoff at the pre-check | tasks/blog-render-timeout-fix.md |
 | 2026-08-29 | Environment-divergence lesson merged (item 12: verify the diagnosis against the code before shipping the fix narrative; fresh temp profile per render; helper-suppression flags; noise-filtered head+tail stderr with an all-noise hint; offline self-probe as CLI mode + fail-fast pre-flight; recorder-browser profile-lifecycle proof), fallback rewritten to era-anchored /web/<YYYY>/ with the peak>death>launch year rule and the parked-domain hazard of /web/2/ | tasks/blog-render-profile-fix.md |
+| 2026-08-29 | Acquisition-cascade lesson merged (item 13: route ordering by reachability/rights/fidelity; the third sourced-image plate mode with visible attribution; strict raw-title word-boundary matching; shared binary guards incl. four-format dimension parsing; sanitized real-fetch fixtures; escaped-URL-aware attribution checks; descriptor-protocol and raw-space-URL debugging traps) | tasks/blog-image-search-route.md |

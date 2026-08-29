@@ -9,7 +9,11 @@ generator: deadweb-pipeline 0.1 (deterministic scaffold)
 editor: web-product-engineer (editorial pass 2)
 data_source_mode: "facts: seed-corpus; wikipedia-unreachable; wayback-cdx-unreachable; hn-algolia (live, subject query)"
 generated: 2026-08-29
-illustration: generated
+illustration: sourced-image
+image_source: bing-image-search
+image_page_url: https://www.gcores.com/articles/165443
+image_url: https://image.gcores.com/fec68652563352274ddd7419bc7f9279-1376-850.png?x-oss-process=image/resize,limit_1,m_mfit,w_2000/quality,q_90/format,webp/bright,-20
+image_retrieved: 2026-08-29
 sources:
   - Wikipedia: Newgrounds | https://en.wikipedia.org/wiki/Newgrounds
   - Hacker News thread: "Newgrounds: Flash Forward 2025" (2025-08-18) | https://news.ycombinator.com/item?id=44945730

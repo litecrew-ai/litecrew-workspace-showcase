@@ -21,13 +21,22 @@ read as tech-insider). Recorded here per the Task's naming requirement.
     python3 run.py             # discover -> skip covered -> draft -> rebuild
     python3 run.py --posts 3   # draft up to 3 new subjects this run
     python3 run.py --rebuild-only
+    python3 run.py --fetch-images
+                                # image-search acquisition cascade per
+                                # subject: Bing image search (strict subject
+                                # match, source attribution) -> Wikimedia
+                                # Commons (license-clean) -> the probe-gated
+                                # archived-page render; every attempt logged
+                                # in RESULT.md; failures degrade to the
+                                # labeled generated plate -- never a
+                                # stand-in image
     python3 run.py --fetch-screenshots
-                                # render real archived pages for every
-                                # subject with a headless browser (located via
-                                # CHROME_BIN or a PATH probe; needs egress to
-                                # web.archive.org); every attempt logged in
-                                # RESULT.md; failures degrade to the labeled
-                                # generated plate -- never a stand-in image
+                                # render-only alias: archived-page render for
+                                # every subject with a headless browser
+                                # (located via CHROME_BIN or a PATH probe;
+                                # needs egress to web.archive.org); every
+                                # attempt logged in RESULT.md; failures
+                                # degrade to the labeled generated plate
     python3 run.py --verify    # structure + gate checks + mounted-subpath
                                 # serving test; prints PASS/FAIL
 
@@ -45,7 +54,11 @@ See `docs/scheduling.md` for recurring-run recipes (cron and CI sample).
       writing.py               stage 3: deterministic post scaffolds (drafts)
       svgart.py                stage 4: procedural SVG illustration
       site.py                  stage 5: static site assembly (presentation layer)
+      imagesearch.py           optional stage: image-search acquisition
+                               (Route 1 Bing async endpoint; Route 2 Wikimedia
+                               Commons; strict subject match + binary guards)
       screenshots.py           optional stage: real Wayback Machine screenshots
+                               (Route 3, render-don't-fetch)
       util.py                  fetch/json/slugs/glyph hygiene helpers
     data/
       seed_corpus.json         offline corpus: 20 subjects, sourced facts
@@ -57,9 +70,16 @@ See `docs/scheduling.md` for recurring-run recipes (cron and CI sample).
     src/
       styles.css               the one hand-written stylesheet (source of truth)
     assets/
-      screenshots/             fetched screenshot binaries (source assets;
+      screenshots/             archived-page render binaries (source assets;
                                .png/.jpg only; the builder copies them into
                                site/assets/; never clobbered by re-runs)
+      images/                  sourced-image binaries from the search/Commons
+                               routes (.png/.jpg/.jpeg/.gif/.webp; same
+                               copying and never-clobber rules)
+    tests/
+      test_screenshots.py      render-route unit tests (loopback where feasible)
+      test_imagesearch.py      image-search unit tests (fixture + loopback)
+      fixtures/                sanitized real-fetch HTML for parser tests
     site_config.json           base_url + titles/description + path_prefix
     site/                      built output: index.html, categories.html,
                                about.html, rss.xml, styles.css, posts/, assets/
@@ -173,10 +193,22 @@ this environment, so v0 calls no LLM.
 ## Illustration
 
 Every post carries exactly one plate, and the plate's mode is part of the
-published page (decision D11 in `docs/design.md`):
+published page (decision D11 in `docs/design.md`). Three plate kinds, no
+middle state:
 
+- **Sourced-image plates** ("historical image: Bing image search" / "via
+  Wikimedia Commons, <license>") are real image files found through image
+  search or a license-clean repository, stored only when the title or source
+  page of the candidate actually names the subject, and attributed on the
+  plate: the source-page host rides in the visible label, the full source
+  page URL rides as a link in the post's PROVENANCE box, and the retrieval
+  date is recorded in front matter and printed. Produced by Route 1/2 of
+  `run.py --fetch-images` (see the cascade below); binaries live under
+  `assets/images/<slug>.<ext>` and are copied into `site/assets/` like the
+  stylesheet.
 - **Screenshot plates** are pixels a real headless browser rendered from the
-  subject's real archived page. `run.py --fetch-screenshots` resolves a
+  subject's real archived page. `run.py --fetch-screenshots` (the render
+  route, also Route 3 of the cascade) resolves a
   representative snapshot (the earliest status-200 capture in the CDX index,
   falling back to Wayback's era-anchored nearest-capture form
   `/web/<YYYY>/<original-url>`, where YYYY comes from the subject's own fact
@@ -229,15 +261,80 @@ published page (decision D11 in `docs/design.md`):
   memorial art" on the page. The same slug always reproduces the same
   artwork (asserted by `--verify`).
 
-There is no middle state. When web.archive.org is unreachable -- the norm in
-this build environment (see the run log), and the state of all 20 plates as
-of 2026-08-29 -- posts degrade to the generated plate and say so on the
-page. A fetch that succeeds flips only that post to a screenshot plate.
-`--verify` asserts mode agreement across front matter, plate label,
-rendered art, and stored binaries, so nothing can be mislabeled. SVGs are
-inlined into the HTML and also saved standalone under `site/assets/`;
-screenshot binaries live in `assets/screenshots/` (source assets) and are
-copied into `site/assets/` by the builder like the stylesheet.
+There is no middle state. A subject with no acceptable, attributable image
+ships the generated plate and says so on the page. `--verify` asserts mode
+agreement across front matter, plate label, rendered art, and stored
+binaries, so nothing can be mislabeled. SVGs are inlined into the HTML and
+also saved standalone under `site/assets/`; image and screenshot binaries
+are copied into `site/assets/` by the builder like the stylesheet. Stored
+binaries are never clobbered; delete `assets/images/<slug>.<ext>` (or
+`assets/screenshots/<slug>.<ext>`) to refetch one.
+
+### The image-search cascade (`run.py --fetch-images`)
+
+Route order per subject -- the first route that stores a binary wins:
+
+1. **Route 1 -- Bing image search** (primary; proven live from the build
+   box). The pipeline queries
+   `www.bing.com/images/async?q=<query>&first=0&count=35&mmasync=1` with a
+   desktop UA and parses the server-rendered `class="iusc" m="..."` JSON
+   (title `t`, original image `murl`, Bing thumbnail `turl`, source page
+   `purl`). Two things learned the hard way (also recorded in
+   `knowledge/writing/dead-web-source-catalog.md`):
+   - the plain `/images/search` page 302-redirects to cn.bing.com from this
+     network and serves **bot-filler junk** in its server-rendered grid (cat
+     memes for "GeoCities", anime wallpapers for "Winamp"; 0/35 candidates
+     matched while the page title echoed the right query). The async
+     endpoint above serves the real candidate set.
+   - the query shape is `<name> <era-year> website screenshot`, where the
+     era year is the same deterministic peak>death>launch anchor the render
+     route uses (read from the subject's own fact sheet). Experiment on 4
+     subjects: the era-year form matched equal-or-more strict candidates on
+     every subject (4-vs-0 on pets-com) and raised era-relevant hits.
+   Per candidate: **strict subject match** (a word-boundary form of the
+   subject name, an alias, or the domain must appear in the RAW title or
+   the source page URL -- near-miss spellings like "Geocites" never match,
+   short aliases like "aim" match only on word boundaries, and non-ASCII
+   title runs count as separators so a CJK title glued to the name still
+   matches); deterministic ranking (subject domain in the source page, era
+   year visible, "screenshot" wording, direct image extension; stock-preview
+   hosts demoted); then fetch **murl first, turl fallback** (some original
+   hosts hotlink-protect with 403; the tse thumbnail hosts answer reliably
+   and honor `pid=15.1&w=600` for a >=500px image).
+2. **Route 2 -- Wikimedia Commons** (license-clean; needs wikimedia egress
+   -- the build box gets an SSL handshake timeout, recorded in RESULT.md,
+   so this route runs from the laptop). API search in namespace 6 with
+   `prop=imageinfo&iiprop=url|size|mime|extmetadata`; only `image/*` mime;
+   **a file without a license short name is never stored** (fail closed);
+   author and license are stamped into front matter and printed on the
+   plate as CC-BY-family attribution requires.
+3. **Route 3 -- archived-page render** (the strategy documented below,
+   unchanged): runs last, only when routes 1-2 stored nothing, and stays
+   probe-gated -- `--fetch-images` runs the same fail-fast pre-flight
+   render probe, and a failed probe skips the render route for every
+   subject (routes 1-2 are still attempted).
+
+Env toggles: `GAZETTE_BING=0`, `GAZETTE_COMMONS=0`, `GAZETTE_RENDER=0`
+disable a route for a run (default all on) -- e.g. from the laptop,
+`GAZETTE_BING=0 GAZETTE_RENDER=0 python3 run.py --fetch-images` runs the
+Commons route alone. Politeness: ~4s between subjects, one search query per
+subject per run.
+
+Binary guards on anything stored (both routes): magic bytes
+(jpeg/png/gif/webp), parseable dimensions with width >= 300px, a 6KB floor
+against spacer/tracking images, and a hard 100KB cap from this box (larger
+originals are a laptop-route concern and must be individually size-reported
+there). Every attempt (host, HTTP code, bytes, rejection reason) lands in
+RESULT.md; any doubt degrades that subject to the labeled generated plate.
+
+**Licensing posture (on the record).** Search-result images are of varying
+rights; the operator chose this route by instruction. The gazette's posture
+is attribution-first: every sourced plate names and links its source page,
+nothing strips or obscures attribution, and every sourced image can be
+swapped for a license-clean Commons file (Route 2) or removed without
+touching the written record. The about page states the same policy in
+public. Screenshot plates remain reserved for actual archive renders -- a
+found historical image is never labeled a screenshot.
 
 ### Producing real screenshot plates (the operator / laptop run)
 
@@ -307,15 +404,21 @@ Browser resolution order, printed as the first line of every run:
    `chromium-browser`, `msedge`, `chrome`, `edge`;
 3. the macOS app bundles for Chrome, Chromium, and Edge.
 
-The whole run is one copy-paste block:
+The whole run is one copy-paste block (search/Commons cascade first; the
+render-only alias stays below it):
 
     cd /path/to/internet-archaeology-blog
+    python3 run.py --fetch-images        # bing -> commons -> render cascade
+    python3 run.py --rebuild-only
+    python3 run.py --verify
+
+    # render-only (the old alias), or Commons alone from a network with
+    # wikimedia egress:
     export CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable \
       || command -v chromium || command -v chromium-browser || command -v msedge)"
     python3 run.py --probe-render
     python3 run.py --fetch-screenshots
-    python3 run.py --rebuild-only
-    python3 run.py --verify
+    # GAZETTE_BING=0 GAZETTE_RENDER=0 python3 run.py --fetch-images
 
 Notes for that run:
 
@@ -355,6 +458,11 @@ this table before changing anything:
 
 | Observed signature | Most likely cause | What to do |
 | --- | --- | --- |
+| `bing search: no iusc metadata parsed (layout change or block page)` for every subject | the async endpoint changed shape, or this network/proxy started serving a block page instead of results | fetch the endpoint by hand and compare with `tests/fixtures/bing_images_async_geocities.html`; if the `m="..."` JSON keys changed, update `parse_candidates` (it fails closed -- nothing is stored on parse doubt) |
+| `bing search: N candidates parsed, 0 strict subject matches ...` for one subject | no candidate's title or source page actually names the subject (strict match doing its job) | honest degradation by design; try re-running later (results rotate) or accept the generated plate -- never loosen the matcher to "close enough" |
+| `murl <host>: HTTP 403` then `stored <slug>.<ext> via turl` | the original host hotlink-protects (measured on webdesignmuseum.org) | nothing to do; the tse-thumbnail fallback carried it and the provenance keeps the source-page URL |
+| `commons search: URL error (... handshake ...) from commons.wikimedia.org` | wikimedia egress blocked from this network (the build box; recorded in RESULT.md) | run the Commons route from the laptop: `GAZETTE_BING=0 GAZETTE_RENDER=0 python3 run.py --fetch-images` |
+| `image NNNNN bytes rejected (image ... over ... cap)` | a candidate larger than the 100KB hard cap from this box | by design; the next candidate (usually the tse thumbnail) is tried; a deliberately larger original is a laptop-route concern |
 | `wall guard killed the process group ... chrome stderr: filtered stderr is empty ...` -- the raw stderr was only crash-handler / updater VERBOSE noise, no file was written, typically on a machine whose daily browser is running | the browser stalled before rendering. Not the classic default-profile lock in this code -- every render already passes a fresh temp `--user-data-dir`; suspects are app-bundle singleton behavior, flag-set divergence in that Chrome channel, or helper interference | run `python3 run.py --probe-render` (seconds, offline). If it fails or hangs, point `CHROME_BIN` at a chromium build, or close the running browser once and re-probe; the fetch run runs this probe automatically and stops early |
 | `Page load timed out ... bytes written` followed by `rejected: png only N bytes (< ... floor)` | slow archived page: Chrome captured at its `--timeout` before the page composited (new headless does not composite a never-loading page) | raise `CHROME_TIMEOUT_MS` in `pipeline/screenshots.py` (e.g. 60000) and re-run for just those subjects (nothing was stored) |
 | `rejected: png only N bytes (< floor)` with no timeout line | blank or browser-error render (wrong-page capture, error page) | the guards did their job; check the subject's `archived_url` in RESULT.md and re-run that subject |
@@ -417,20 +525,22 @@ threshold is passed.
   signatures; see RESULT.md), so category discovery and lifespan metadata
   run in fallback mode; the code paths are live but were exercised only by
   their failure handling here.
-- Real screenshots cannot be produced from this build environment
+- Real archive renders cannot be produced from this build environment
   (web.archive.org is network-unreachable here -- connections hang until
   timeout; see RESULT.md for every recorded attempt, including the full
-  render-path rehearsal that degrades 20/20). All 20 plates therefore ship
-  as honestly labeled generated art. The `--fetch-screenshots` stage is the
-  operator-runnable path: run it (or wire it into CI, see
-  `docs/scheduling.md`) from any machine with a Chrome/Chromium-class browser
-  and egress to web.archive.org, and the rendered plates replace the
-  generated ones on rebuild. The browser machinery itself (subprocess
-  invocation, payload guards) is exercised locally against loopback by the
-  unit tests, including on this box, which does carry a chromium binary.
-  Screenshot binaries are exempt from the 100KB-per-text-file gate by design
-  and are individually size-reported in RESULT.md and by `--verify`; the
-  operator decides whether to keep them in the repository.
+  render-path rehearsal that degrades 20/20). Sourced historical images CAN
+  be produced here: Route 1 (Bing image search via the async endpoint) is
+  live from this box and shipped real plates in the 2026-08-29 run; see
+  RESULT.md for the per-subject outcome table. Route 2 (Wikimedia Commons)
+  needs wikimedia egress and is laptop-run. The `--fetch-screenshots` render
+  stage is likewise operator-runnable from any machine with a
+  Chrome/Chromium-class browser and egress to web.archive.org. The browser
+  machinery itself (subprocess invocation, payload guards) is exercised
+  locally against loopback by the unit tests, including on this box, which
+  does carry a chromium binary. Image and screenshot binaries are exempt
+  from the 100KB-per-text-file gate by design and are individually
+  size-reported in RESULT.md and by `--verify`; the operator decides whether
+  to keep them in the repository.
 - No LLM API is called anywhere; drafting is deterministic assembly, which
   produces scaffolds, not prose.
 - The `base_url` in `site_config.json` is a documented placeholder; there is

@@ -3,7 +3,7 @@ subject: writing
 slug: dead-web-source-catalog
 tags: [dead-web, keyless-apis, hn-algolia, wikipedia-api, wayback-cdx, research-sources]
 related_goals: [internet-archaeology-blog]
-related_tasks: [blog-v0-pipeline, blog-screenshots-and-paths, blog-screenshot-renderer]
+related_tasks: [blog-v0-pipeline, blog-screenshots-and-paths, blog-screenshot-renderer, blog-image-search-route]
 last_verified_date: 2026-08-29
 status: active
 ---
@@ -28,13 +28,22 @@ answer, or you need citable reaction evidence for a shutdown story.
   workhorse. Story search with `tags=story` and `numericFilters=points>50`
   returns title, date, points, comment count, and a permanent item URL --
   directly citable as reaction evidence. Answered live from this environment.
+- **Bing image search** (`https://www.bing.com/images/async?...&mmasync=1`):
+  the live image-acquisition source from this environment -- WITH a trap: the
+  plain `/images/search` page serves bot-filler junk from here (see the
+  Bing section below). Thumbnail hosts `tse1-4.mm.bing.net` answer 200 and
+  honor `pid=15.1&w=<px>`; `pid=Api` ignores `w`.
 - **Wikipedia API** (`https://en.wikipedia.org/w/api.php`): category members
   for defunct-site lists, intro extracts for fact sheets. Unreachable from
   this build environment (connection-level failure); code the path, but never
-  rely on it here.
+  rely on it here. **Wikimedia Commons** (`commons.wikimedia.org/w/api.php`)
+  likewise: SSL handshake timeout from this box -- the license-clean image
+  route is laptop-run.
 - **Wayback CDX** (`http://web.archive.org/cdx/search/cdx`): domain lifespan
   from first/last snapshot timestamps. Also unreachable from this
   environment.
+- `duckduckgo.com` and `google.com`: unreachable from this box (probed
+  2026-08-29) -- Bing is the only search engine with egress here.
 - Therefore: design every fetch with a short timeout and a recorded fallback,
   and store the per-source live/offline status with each artifact so no
   output overstates its sourcing.
@@ -95,6 +104,41 @@ expect to fall back to Wayback's nearest-capture form. The working pattern is
 `https://web.archive.org/web/<ts>/<original-url>` with a headless browser
 (see `post-generation-pipeline.md`, truthful-images section).
 
+### Bing image search: the async endpoint is the real one (2026-08-29)
+
+Reachability from this box is only half the story; the trap is WHICH URL
+you fetch:
+
+- `www.bing.com/images/search?q=...` 302-redirects to `cn.bing.com` from
+  this network and answers HTTP 200 with a plausible ~250KB page whose title
+  and chrome echo your query -- but the server-rendered result grid is
+  **bot-filler junk** (cat memes for "GeoCities website screenshot", anime
+  wallpapers for "Winamp"; 0 of 35 candidates matched the query, twice). A
+  page that looks successful and parses fine can still be worthless: always
+  strict-match candidates against the query subject before believing a
+  Bing-images fetch.
+- The real result set comes from the pagination endpoint the grid itself
+  uses: `https://www.bing.com/images/async?q=<query>&first=0&count=35&
+  mmasync=1` (desktop UA, redirects followed). It answered 200 with 35
+  parseable candidates, 33/35 strict-matching the GeoCities query. The
+  metadata lives in server-rendered `class="iusc" m="..."` anchor
+  attributes: HTML-escaped JSON with `t` (title), `murl` (original image),
+  `turl` (Bing thumbnail), `purl` (source page). Parse fail-closed: require
+  murl AND turl, drop everything else.
+- Query shape that worked (measured on 4 subjects): `<name> <era-year>
+  website screenshot` beat or matched `<name> website screenshot` on strict-
+  matched counts every time (4-vs-0 on pets-com) -- the era year pulls in
+  era-relevant museum/blog screenshots.
+- Fetch strategy: try `murl` first (some original hosts hotlink-protect --
+  webdesignmuseum.org and i.somethingawful.com measured 403), fall back to
+  the `turl` thumbnail (tse hosts reachable and reliable). `pid=15.1&w=600`
+  honors the width parameter (600x768 jpeg measured); `pid=Api` ignores
+  `w`. Bing murls can contain raw spaces/control characters (a
+  youtube-thumbnail path measured) -- percent-encode before the request or
+  http.client raises InvalidURL mid-batch.
+- Politeness ~4s between subjects, one query per subject per run, worked
+  without any block or challenge across a 20-subject live run.
+
 ## Boundaries and counter-examples
 
 - This catalog is about sources for the dead web specifically. For general
@@ -123,3 +167,4 @@ expect to fall back to Wayback's nearest-capture form. The working pattern is
 | 2026-08-29 | Initial version from v0 blog build           | tasks/blog-v0-pipeline.md  |
 | 2026-08-29 | Added Wayback screenshot-endpoint reachability + fetcher pointer | tasks/blog-screenshots-and-paths.md |
 | 2026-08-29 | Screenshot endpoint marked dead with reachable-network evidence (404 html x 20); CDX slow-but-alive timings; render-don't-fetch pointer | tasks/blog-screenshot-renderer.md |
+| 2026-08-29 | Added Bing image search: the bot-filler junk-grid trap, the mmasync=1 async-endpoint recipe, query shape, murl/turl fetch strategy with w-param behavior, and the reachability map update (bing live; duckduckgo/google/wikimedia unreachable from this box) | tasks/blog-image-search-route.md |
