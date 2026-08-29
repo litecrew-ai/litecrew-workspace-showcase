@@ -5,6 +5,12 @@ Usage:
   python3 run.py                discover -> skip covered -> draft -> rebuild
   python3 run.py --posts 3      draft up to 3 new subjects this run
   python3 run.py --rebuild-only just rebuild the static site
+  python3 run.py --probe-render
+                                offline first-run check: render a data: page
+                                through the exact production browser
+                                invocation and validate the png; run this
+                                FIRST on any new machine (a fail-fast probe
+                                also opens --fetch-screenshots)
   python3 run.py --fetch-screenshots
                                 render real archived pages per subject with
                                 a headless browser (CHROME_BIN or a PATH
@@ -56,9 +62,14 @@ SCREENSHOTS = ROOT / "assets" / "screenshots"
 
 SIZE_LIMIT = 100 * 1024  # publication gate: no text file over 100KB
 # When the run log is this close to the gate, per-subject fetch lines stay on
-# stdout and RESULT.md gets a condensed outcome summary instead (rotation of
-# historical sections is an operator/Eve decision, recorded in the Task log).
+# stdout and RESULT.md gets a condensed outcome summary instead.
 RESULT_CONDENSE_THRESHOLD = 88 * 1024
+# Rotation policy (full text in RESULT.md and docs/result-log/archive-1.md):
+# when RESULT.md exceeds this threshold, move everything except the header,
+# the current verification-methods section, and the last ~10 run entries into
+# the next docs/result-log/archive-<N>.md. Nothing is deleted; history moves.
+RESULT_ROTATE_THRESHOLD = 60 * 1024
+RESULT_LOG_DIR = ROOT / "docs" / "result-log"
 
 
 # ---------------------------------------------------------------------------
@@ -77,6 +88,11 @@ def append_result(lines: list[str]) -> None:
         )
     with RESULT.open("a", encoding="utf-8") as fh:
         fh.write("\n".join(block) + "\n")
+    if RESULT.stat().st_size > RESULT_ROTATE_THRESHOLD:
+        print(f"note: RESULT.md is past the {RESULT_ROTATE_THRESHOLD // 1024}KB "
+              "rotation threshold -- rotate per the policy in "
+              "docs/result-log/ (move all but the newest verification-methods "
+              "section and the last ~10 entries into the next archive file)")
 
 
 # ---------------------------------------------------------------------------
@@ -176,20 +192,62 @@ def condense_outcomes(results: list[dict]) -> list[str]:
             f"[{', '.join(groups[key])[:400]}]" for key in sorted(groups)]
 
 
+def probe_render_mode() -> int:
+    """CLI mode for the offline render self-probe (screenshots.probe_render).
+
+    The FIRST thing to run on any new machine: it exercises the exact
+    browser_cmd() invocation -- fresh temp profile included -- against a
+    data: URL (no network), then validates the written png (magic, window
+    dimensions, non-blank floor). A browser that cannot run this recipe
+    headlessly fails here in seconds with an actionable message, instead of
+    during a 25-minute subject batch. --fetch-screenshots runs the same probe
+    automatically and stops before the first subject when it fails.
+    """
+    browser, browser_note = screenshots.find_browser()
+    print(browser_note)
+    if not browser:
+        append_result([f"mode: probe-render -- FAIL (no browser binary)"])
+        return 1
+    r = screenshots.probe_render(browser)
+    print("probe invocation (temp paths differ per run; the probe page is a"
+          " data: URL):")
+    shown = [a if not a.startswith("data:")
+             else a[:24] + f"...({len(a)}-char data: page)" for a in r["flags"]]
+    print("  " + " ".join(shown))
+    verdict = "PASS" if r["ok"] else "FAIL"
+    print(f"probe result: {verdict} -- {r['reason']}")
+    print(f"elapsed: {r['elapsed_s']:.1f}s; bytes written: {r['bytes']}")
+    if r["hint"]:
+        print(r["hint"])
+    append_result([
+        f"mode: probe-render -- {verdict}",
+        f"browser: {browser_note}",
+        f"result: {r['reason']}; elapsed {r['elapsed_s']:.1f}s",
+    ] + ([] if r["ok"] else [f"hint: {r['hint']}"]))
+    return 0 if r["ok"] else 1
+
+
 def fetch_screenshots() -> int:
     """Render a real archived page per published subject, headlessly.
 
     Strategy is render-don't-fetch: the former web.archive.org/screenshot
     endpoint is dead (operator run 2026-08-29: HTTP 404 + an HTML error page
-    for all 20 subjects). Each subject resolves a snapshot via hardened CDX
+    for all 20 subjects). A pre-flight render probe (the --probe-render
+    check, offline data: page through the exact invocation) runs first and
+    the batch STOPS before the first subject when it fails -- no more
+    25-minute doomed runs. Each subject resolves a snapshot via hardened CDX
     (25s timeout, one retry, 200-preference, circuit breaker; a CDX miss of
-    any kind falls back to Wayback's nearest-capture /web/2/ form), pre-checks
-    the playback URL (HTTP 503 backed off ~15s and retried once), then renders
-    it with a browser subprocess located through $CHROME_BIN or a PATH probe.
-    The capture bound is Chrome's own --timeout (the laptop run of 2026-08-29
-    lost all 20 renders to a --virtual-time-budget-only invocation that never
-    reached load-complete); our 75s wall budget is only the outer guard and
-    chrome's stderr tail rides along in every failure line. Every attempt
+    any kind falls back to Wayback's era-anchored nearest-capture
+    /web/<YYYY>/<url> form using the fact sheet's peak/death/launch year --
+    /web/2/, which resolves to the MOST RECENT capture, only when the sheet
+    has no year), pre-checks the playback URL (HTTP 503 backed off ~15s and
+    retried once), then renders it with a browser subprocess located through
+    $CHROME_BIN or a PATH probe. The capture bound is Chrome's own --timeout
+    (the laptop run of 2026-08-29 lost all 20 renders to a
+    --virtual-time-budget-only invocation that never reached load-complete);
+    our 75s wall budget is only the outer guard, every render runs in its own
+    fresh temp profile, and chrome's filtered stderr (head+tail, chrome/
+    updater noise dropped) rides along in every failure line. Every attempt
     lands in RESULT.md; failures degrade the subject to the labeled generated
     plate. When no browser binary exists the run degrades once, with the
     actionable message, and touches no network at all. Post bodies are
@@ -206,13 +264,35 @@ def fetch_screenshots() -> int:
     browser, browser_note = screenshots.find_browser()
     print(browser_note)
     log = [
-        "mode: fetch-screenshots (render strategy: resolve via CDX (misses "
-        "fall back to the nearest-capture /web/2/ form), pre-check the "
-        "playback url (503 -> backoff + one retry), then screenshot it with "
-        "a headless browser; chrome's own --timeout is the capture bound, "
+        "mode: fetch-screenshots (render strategy: pre-flight probe, then "
+        "resolve via CDX (misses fall back to the era-anchored /web/<YYYY>/ "
+        "form from the fact sheet's peak/death/launch year; /web/2/ only "
+        "when the sheet has no year), pre-check the playback url (503 -> "
+        "backoff + one retry), then screenshot it with a headless browser in "
+        "a fresh temp profile; chrome's own --timeout is the capture bound, "
         "the 75s wall budget is only the outer guard)",
         browser_note,
     ]
+
+    if browser:
+        # Fail fast: prove the browser can run this recipe at all before the
+        # first 25s CDX lookup or 30s render is spent (the operator's third
+        # laptop run hung on all 20 subjects with nothing but updater noise
+        # on stderr; the probe turns that into a 10-second diagnosis).
+        probe = screenshots.probe_render(browser)
+        verdict = "PASS" if probe["ok"] else "FAIL"
+        print(f"pre-flight render probe: {verdict} -- {probe['reason']} "
+              f"({probe['elapsed_s']:.1f}s, {probe['bytes']} bytes)")
+        if not probe["ok"]:
+            log.append(f"pre-flight render probe: FAIL -- {probe['reason']}")
+            log.append("subjects NOT attempted (fail fast): fix the browser "
+                       "environment first; python3 run.py --probe-render "
+                       "re-runs the probe alone")
+            log.append(f"hint: {probe['hint']}")
+            append_result(log)
+            print("\n".join(log))
+            return 1
+        log.append(f"pre-flight render probe: PASS -- {probe['reason']}")
 
     cdx_state: dict = {"fails": 0, "tripped": False}
     results = []
@@ -221,8 +301,13 @@ def fetch_screenshots() -> int:
         if i and did_work:
             time.sleep(screenshots.INTER_SUBJECT_DELAY)
         subj = subjects.get(p.stem, {"slug": p.stem, "name": p.stem})
+        # Era anchor from the subject's own fact sheet (peak/death/launch
+        # year); None -> the /web/2/ fallback form.
+        sheet = util.load_json(FACTS_DIR / f"{p.stem}.json", {})
+        era = screenshots.era_anchor_year(sheet)
         r, worked = screenshots.attempt_subject(
-            p, subj, SCREENSHOTS, fetch_date, browser=browser, cdx_state=cdx_state)
+            p, subj, SCREENSHOTS, fetch_date, browser=browser,
+            cdx_state=cdx_state, era_year=era)
         did_work = did_work or worked
         results.append(r)
         print(screenshots.result_line(r))
@@ -889,13 +974,23 @@ def main() -> int:
                     help="render real archived pages per subject with a "
                          "headless browser (CHROME_BIN or PATH probe; "
                          "web.archive.org egress required); every attempt "
-                         "logged; failures degrade to labeled generated art")
+                         "logged; failures degrade to labeled generated art; "
+                         "a fail-fast render probe runs first")
+    ap.add_argument("--probe-render", action="store_true",
+                    help="offline first-run check: render a data: page "
+                         "through the exact production invocation (fresh "
+                         "temp profile included) and validate the png "
+                         "(magic, dimensions, non-blank floor); also run "
+                         "automatically (fail-fast) at the start of "
+                         "--fetch-screenshots")
     ap.add_argument("--verify", action="store_true",
                     help="verify the built site and gate compliance")
     args = ap.parse_args()
 
     if args.verify:
         return verify()
+    if args.probe_render:
+        return probe_render_mode()
     if args.fetch_screenshots:
         return fetch_screenshots()
     if args.rebuild_only:

@@ -1,6 +1,6 @@
 # Workspace recent summary
 
-> Last updated: 2026-08-29 13:00 by Eve
+> Last updated: 2026-08-29 14:22 by Eve
 > Window: last 7 days · full history in sessions/archive/
 
 ## Active Goal snapshot (≤ 30 lines per Goal, only current state + next step)
@@ -17,6 +17,7 @@
 
 | Date       | Task                                  | Result  | Key output                                                       |
 | ---------- | ------------------------------------- | ------- | ---------------------------------------------------------------- |
+| 2026-08-29 | blog-render-profile-fix (goal: operate-internet-archaeology-blog) | done | probe-render self-test (auto fail-fast), era-anchored /web/YYYY/ fallback, RESULT.md rotation, updater-flag hardening; Eve's profile-lock diagnosis disproven by code inspection and recorded; 55 tests, 393 checks; see `2026-08-29-142231-operate-internet-archaeology-blog.md` |
 | 2026-08-29 | blog-render-timeout-fix (goal: operate-internet-archaeology-blog) | done | Chrome --timeout self-capture proven by local stalled-page reproduction; 503 backoff; /web/2/ nearest-capture; 36 tests, 393 checks; operator re-run pending; see `2026-08-29-130019-operate-internet-archaeology-blog.md` |
 | 2026-08-29 | blog-screenshot-renderer (goal: operate-internet-archaeology-blog) | done | render-don't-fetch (dead endpoint removed, hardened CDX, headless-browser screenshots, PNG guards, 24 tests, 393 checks); operator laptop run pending; see `2026-08-29-114008-operate-internet-archaeology-blog.md` |
 | 2026-08-29 | blog-screenshots-and-paths (goal: operate-internet-archaeology-blog) | done | --fetch-screenshots capability (degraded here, archive unreachable, zero fabrication), path_prefix + mounted-subpath verify, 392 checks; see `2026-08-29-104920-operate-internet-archaeology-blog.md` |

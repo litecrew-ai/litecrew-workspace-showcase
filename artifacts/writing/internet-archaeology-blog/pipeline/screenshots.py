@@ -48,6 +48,7 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
+from urllib.parse import quote
 
 from . import util
 
@@ -158,14 +159,62 @@ def lookup_timestamp(url: str, timeout: float = CDX_TIMEOUT,
     return None, f"{last} (after {max(0, retries) + 1} attempt(s))"
 
 
-def archived_page_url(url: str, timestamp: str | None = None) -> str:
+# Era anchoring for the nearest-capture fallback. /web/2/<url> resolves to
+# the MOST RECENT capture Wayback has: for a dead site whose domain is now
+# parked (the operator's third laptop run, 2026-08-29, showed altavista
+# resolving to a 2026 parked page), that screenshots the parked domain, not
+# the remembered site. Wayback's year-anchored form /web/<YYYY>/<url>
+# resolves to the capture NEAREST that year, so an anchor taken from the
+# subject's own sourced fact sheet keeps the fallback inside the subject's
+# life. Selection is deterministic, documented, and unit-tested: a peak
+# phrasing (the remembered era) beats a death phrasing (last days of the real
+# site), which beats a launch phrasing; a sheet with no year-bearing fact
+# degrades to /web/2/ exactly as before. Provenance keeps printing the
+# RESOLVED timestamp (recovered from the redirect target), never the anchor
+# year, so plate labels stay truthful either way.
+YEAR_RE = re.compile(r"\b(19[89]\d|20[0-2]\d)\b")
+PEAK_RE = re.compile(
+    r"most[- ]visited|most popular|at its peak|peak(?:ed|ing)?|"
+    r"tens of millions", re.IGNORECASE)
+DEATH_RE = re.compile(
+    r"shut[^.]{0,40}\bdown|\bclos(?:e|es|ed|ing)\b|retire(?:d|ment)|"
+    r"discontinued|went dark|sunset|wound down|liquidat|bankruptcy",
+    re.IGNORECASE)
+LAUNCH_RE = re.compile(
+    r"launch(?:ed|ing)?|founded|created|first released|released|went public",
+    re.IGNORECASE)
+
+
+def era_anchor_year(sheet: dict | None) -> int | None:
+    """Anchor year for the era-anchored fallback URL, read from the fact
+    sheet's own confidence-tagged facts: the first fact whose text matches a
+    peak / death / launch phrasing (in that priority order) contributes its
+    first mentioned year. Returns None when the sheet carries no usable year
+    -- the caller then falls back to the /web/2/ form."""
+    facts = ((sheet or {}).get("facts")) or []
+    for pattern in (PEAK_RE, DEATH_RE, LAUNCH_RE):
+        for fact in facts:
+            text = str(fact.get("text", ""))
+            years = YEAR_RE.findall(text)
+            if years and pattern.search(text):
+                return int(years[0])
+    return None
+
+
+def archived_page_url(url: str, timestamp: str | None = None,
+                      era_year: int | None = None) -> str:
     """The playback URL a browser renders: /web/<ts>/<original-url>. Without a
-    timestamp (CDX miss, open circuit breaker) the nearest-capture form
-    /web/2/<original-url> is used: Wayback redirects "2" (any pre-1996 value)
-    to the closest capture of any status, so the render is not skipped just
-    because the CDX index timed out."""
+    timestamp (CDX miss, open circuit breaker) the era-anchored nearest-capture
+    form /web/<YYYY>/<original-url> is used when the fact sheet yields an
+    anchor year (Wayback resolves it to the capture nearest that year);
+    /web/2/<original-url> -- which resolves to the closest capture Wayback
+    has, most recent included -- remains only when no era year exists, so the
+    render is never skipped just because the CDX index timed out."""
     ts = (timestamp or "").strip().strip("/")
-    return WAYBACK_WEB + (ts + "/" if ts else "2/") + url
+    if ts:
+        return WAYBACK_WEB + ts + "/" + url
+    anchor = str(int(era_year)) if era_year else "2"
+    return WAYBACK_WEB + anchor + "/" + url
 
 
 FINAL_TS_RE = re.compile(r"/web/(\d{14})/")
@@ -309,13 +358,53 @@ def _kill_group(proc: subprocess.Popen) -> None:
         pass
 
 
-STDERR_TAIL_CHARS = 500  # chrome stderr kept in failure reports (diagnosability)
+STDERR_HEAD_CHARS = 400  # chrome stderr HEAD kept in failure reports: the
+                         # fatal launch error usually sits in the first lines
+STDERR_TAIL_CHARS = 500  # chrome stderr TAIL kept in failure reports: the
+                         # last state before exit
+
+# Chrome/updater bookkeeping lines are diagnostic noise for us: crash-handler
+# handshakes, component-updater chatter, background-service VERBOSE logs. The
+# operator's third laptop run (2026-08-29) hung with its ENTIRE stderr being
+# these lines -- which is itself a signature (see PROFILE_LOCK_HINT): a
+# browser that spawned helpers but never proceeded to render.
+STDERR_NOISE_RE = re.compile(
+    r"crash[-_ ]?handler|crash[-_ ]?reporter|component[-_ ]?updater|"
+    r"updater\b|VERBOSE\d|background[-_ ]?network",
+    re.IGNORECASE,
+)
+
+PROFILE_LOCK_HINT = (
+    "filtered stderr is empty after dropping chrome/updater noise and no file "
+    "was written: the browser stalled before rendering. Note the invocation "
+    "already uses a fresh temp --user-data-dir per render, so the classic "
+    "default-profile singleton lock should not apply to THIS code -- the "
+    "suspects are environment-specific browser behavior (app-bundle "
+    "singleton, flag-set divergence in this Chrome channel, helper "
+    "interference). Run `python3 run.py --probe-render` first: it renders an "
+    "offline data: page through the same invocation in seconds and says "
+    "whether THIS browser can run this recipe headlessly at all. Then try "
+    "CHROME_BIN=/path/to/a/chromium, or close the running browser once and "
+    "re-probe."
+)
 
 
-def _stderr_tail(err: bytes | None, limit: int = STDERR_TAIL_CHARS) -> str:
-    """Last ~limit chars of chrome's stderr, whitespace-squeezed for the log."""
-    text = (err or b"")[-(limit * 4):].decode("utf-8", "replace")
-    return " ".join(text.split())[-limit:]
+def _stderr_report(err: bytes | None, head: int = STDERR_HEAD_CHARS,
+                   tail: int = STDERR_TAIL_CHARS) -> str:
+    """Chrome's stderr, cleaned for failure reports: drop chrome/updater
+    noise lines, squeeze whitespace, then keep BOTH the first ~head and the
+    last ~tail chars (the middle is repetition). Empty string when nothing
+    survives the filter -- callers treat that as its own signal and print
+    PROFILE_LOCK_HINT instead."""
+    text = (err or b"").decode("utf-8", "replace")
+    keep = [" ".join(l.split()) for l in text.splitlines()]
+    keep = [l for l in keep if l and not STDERR_NOISE_RE.search(l)]
+    if not keep:
+        return ""
+    joined = " | ".join(keep)
+    if len(joined) <= head + tail:
+        return joined
+    return joined[:head] + " ...[snip]... " + joined[-tail:]
 
 
 def browser_cmd(browser: str, shot_path: Path, profile: Path, page_url: str,
@@ -325,7 +414,16 @@ def browser_cmd(browser: str, shot_path: Path, profile: Path, page_url: str,
 
     --timeout is the capture mechanism (see CHROME_TIMEOUT_MS); the window
     size, hidden scrollbars, and GPU flags are unchanged from the recipe proven
-    on this machine's chromium."""
+    on this machine's chromium.
+
+    Environment independence: --user-data-dir points at a FRESH temp dir
+    created per render (see render_screenshot), so the browser never touches
+    -- or waits on -- the user's default profile, whose singleton lock the
+    daily running browser holds. --no-first-run / --no-default-browser-check
+    suppress first-run dialogs; the --disable-* trio keeps helper processes
+    (crash reporter, component updater, background networking) from spawning
+    at all, which both shrinks stderr noise and removes updater side-trips
+    during a 20-subject batch."""
     return [
         browser,
         "--headless=new",
@@ -337,6 +435,9 @@ def browser_cmd(browser: str, shot_path: Path, profile: Path, page_url: str,
         "--disable-gpu",
         "--no-first-run",
         "--no-default-browser-check",
+        "--disable-crash-reporter",
+        "--disable-component-update",
+        "--disable-background-networking",
         f"--user-data-dir={profile}",
         page_url,
     ]
@@ -353,15 +454,19 @@ def render_screenshot(browser: str, page_url: str,
     expires even on a page that never finishes loading (the laptop run of
     2026-08-29 lost all 20 renders because a --virtual-time-budget-only
     invocation never reached load-complete on Wayback). Our subprocess wall
-    budget is the outer guard; the browser's stderr tail rides along in every
-    failure report, and a "Page load timed out" stderr line is flagged on the
-    success path too (that capture is blank on this chromium and the payload
-    guards reject it -- the point is the run log says WHY).
+    budget is the outer guard. Every render runs with its OWN fresh temp
+    profile dir (created and removed here) so the invocation is independent of
+    the machine's browser/profile state. The browser's stderr -- filtered of
+    chrome/updater noise, head + tail -- rides along in every failure report
+    (an all-noise stderr plus no file prints the profile-lock/probe hint), and
+    a "Page load timed out" stderr line is flagged on the success path too
+    (that capture is blank on this chromium and the payload guards reject it
+    -- the point is the run log says WHY).
     Returns (png_bytes_or_None, report).
     """
     with tempfile.TemporaryDirectory(prefix="gazette-render-") as tmp:
         shot = Path(tmp) / "shot.png"
-        profile = Path(tmp) / "profile"
+        profile = Path(tmp) / "profile"  # fresh per render, removed with tmp
         cmd = browser_cmd(browser, shot, profile, page_url, chrome_timeout_ms)
         try:
             proc = subprocess.Popen(
@@ -378,17 +483,18 @@ def render_screenshot(browser: str, page_url: str,
                 _, err = proc.communicate(timeout=5)
             except Exception:
                 err = b""
+            diag = _stderr_report(err) or PROFILE_LOCK_HINT
             return None, (
                 f"render: wall guard killed the process group after "
                 f"{timeout:.0f}s with no file (chrome never reached its own "
-                f"--timeout={chrome_timeout_ms}ms; a browser that ignores the "
-                f"flag is the suspect); chrome stderr tail: "
-                f"{_stderr_tail(err) or '(empty)'}"
+                f"--timeout={chrome_timeout_ms}ms; the invocation used a "
+                f"fresh temp --user-data-dir); chrome stderr: {diag}"
             )
         if not shot.is_file():
+            diag = _stderr_report(err) or PROFILE_LOCK_HINT
             return None, (
                 f"render: browser exited {proc.returncode} without writing a "
-                f"file; chrome stderr tail: {_stderr_tail(err) or '(empty)'}"
+                f"file; chrome stderr: {diag}"
             )
         data = shot.read_bytes()
         stalled = b"Page load timed out" in (err or b"")
@@ -397,6 +503,97 @@ def render_screenshot(browser: str, page_url: str,
                 if stalled else "")
         return data, (f"render: exit {proc.returncode}, {len(data)} bytes "
                       f"png{note}")
+
+
+# ---------------------------------------------------------------------------
+# Self-probe: does THIS browser run THIS recipe headlessly?
+# ---------------------------------------------------------------------------
+
+# A deterministic offline page: big text plus varied-color bars. Text
+# anti-aliasing and color variety give the PNG enough entropy that a real
+# capture lands well above a blank render (a flat-color page compresses too
+# well to separate from blank by size). No network references of any kind.
+PROBE_BARS = (
+    (96, "#7a1f1f"), (12, "#f0c419"), (63, "#2d6a4f"), (38, "#144e8c"),
+    (81, "#8c4314"), (24, "#5f2d8c"), (55, "#0f7f8b"), (70, "#b03a6d"),
+    (44, "#3d3d3d"), (89, "#1a2b4a"), (18, "#c9d1c8"), (77, "#6d3b12"),
+    (33, "#274c77"), (60, "#5c8a5c"), (48, "#8a5c8a"), (66, "#c9a227"),
+    (29, "#40241a"), (84, "#20344f"), (51, "#0e5e4a"), (72, "#7c2c2c"),
+    (15, "#d7d7ff"), (58, "#334433"), (87, "#613a61"), (41, "#22517a"),
+)
+
+PROBE_PAGE_HTML = (
+    "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+    "<title>gazette render probe</title></head>"
+    "<body style='margin:0;background:#f5f1e6;font-family:monospace'>"
+    "<div style='background:#1a2b4a;color:#f5f1e6;font-size:40px;"
+    "font-weight:700;padding:26px 20px'>DEAD WEB GAZETTE RENDER PROBE</div>"
+    + "".join(
+        f"<div style='height:21px'><div style='width:{w}%;height:21px;"
+        f"background:{c}'></div></div>"
+        for w, c in PROBE_BARS
+    )
+    + "<p style='font-size:22px;padding:18px 20px;margin:0'>offline probe "
+    "page -- zero network references; a valid capture of this page proves "
+    "the browser ran the recipe headlessly and composited a frame.</p>"
+    "</body></html>"
+)
+
+# data: URL form; the browser needs no network to load it.
+PROBE_URL = "data:text/html," + quote(PROBE_PAGE_HTML, safe="")
+
+# Payload floor for the probe page, calibrated like MIN_PNG_BYTES: a blank
+# 1024x640 render on the reference chromium is 3301 bytes; the probe page
+# rendered 10990 bytes there (deterministic across repeated runs). The 6000
+# floor sits between them with ~2x margin on both sides, so a blank or
+# browser-error capture can never pass the probe while a real capture of
+# this deliberately busy page passes comfortably.
+PROBE_MIN_PNG_BYTES = 6000
+
+
+def probe_assess(data: bytes | None, render_report: str) -> tuple[bool, str]:
+    """Validate a probe render: PNG magic, exact render-window dimensions, and
+    the probe-specific non-blank floor. Returns (ok, reason_or_summary)."""
+    if not data:
+        return False, render_report
+    if sniff_image(data) != ".png":
+        return False, f"probe payload is not a png (starts {data[:24]!r})"
+    dims = png_dimensions(data)
+    want = tuple(int(x) for x in WINDOW_SIZE.split(","))
+    if dims != want:
+        return False, (f"probe png is {dims[0]}x{dims[1]}, expected "
+                       f"{want[0]}x{want[1]} (the render window)")
+    if len(data) < PROBE_MIN_PNG_BYTES:
+        return False, (f"probe png only {len(data)} bytes (< probe floor "
+                       f"{PROBE_MIN_PNG_BYTES}) -- a blank or never-composited "
+                       "capture, not the probe page")
+    return True, f"probe png {len(data)} bytes, {want[0]}x{want[1]}"
+
+
+def probe_render(browser: str) -> dict:
+    """The first-run check: render the offline probe page through the EXACT
+    production path (render_screenshot -> browser_cmd, fresh temp profile and
+    all) and assess the payload. Needs no network, so it works on any machine
+    in seconds -- if THIS browser cannot run this recipe headlessly, the probe
+    says so before a 25-minute subject batch burns itself down. Returns a
+    report dict: ok, browser, flags, elapsed_s, bytes, reason, render_report,
+    hint."""
+    t0 = time.monotonic()
+    data, render_report = render_screenshot(browser, PROBE_URL)
+    elapsed = time.monotonic() - t0
+    ok, reason = probe_assess(data, render_report)
+    flags = browser_cmd(browser, Path("<tmp>/shot.png"), Path("<tmp>/profile"),
+                        PROBE_URL)
+    return {
+        "ok": ok,
+        "browser": browser,
+        "flags": flags,
+        "elapsed_s": elapsed,
+        "bytes": len(data) if data else 0,
+        "reason": reason,
+        "render_report": render_report,
+        "hint": "" if ok else PROFILE_LOCK_HINT,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -461,17 +658,21 @@ def body_sha256(path: Path) -> str:
 
 def attempt_subject(post_path: Path, subject: dict, shots_dir: Path,
                     fetch_date: str, browser: str | None = None,
-                    cdx_state: dict | None = None) -> tuple[dict, bool]:
+                    cdx_state: dict | None = None,
+                    era_year: int | None = None) -> tuple[dict, bool]:
     """Resolve + pre-check + render + store + stamp one subject.
 
-    Returns (result_dict_for_the_log, did_network_work). With no browser the
-    subject degrades immediately and touches no network at all.
+    era_year (from the fact sheet, see era_anchor_year) anchors the
+    nearest-capture fallback URL inside the subject's life when CDX yields no
+    timestamp; it is ignored whenever CDX resolves one. Returns
+    (result_dict_for_the_log, did_network_work). With no browser the subject
+    degrades immediately and touches no network at all.
     """
     slug = subject["slug"]
     result = {
         "slug": slug, "canonical_url": None, "stored": None, "timestamp": None,
         "archived_url": None, "bytes": None, "illustration": "generated",
-        "capture_mode": None, "note": [],
+        "capture_mode": None, "era_anchor": era_year, "note": [],
     }
 
     existing = [e for e in IMAGE_EXTS if (shots_dir / f"{slug}{e}").exists()]
@@ -515,10 +716,18 @@ def attempt_subject(post_path: Path, subject: dict, shots_dir: Path,
         if cdx_state is not None:
             cdx_state["fails"] = 0
     else:
-        result["note"].append(f"cdx {url}: {cdx_err}")
-        result["note"].append(
-            "cdx miss -> nearest-capture fallback "
-            f"{archived_page_url(url, None)}")
+        fallback = archived_page_url(url, None, era_year)
+        if era_year:
+            result["note"].append(
+                f"cdx miss -> era-anchored nearest-capture fallback {fallback} "
+                f"(anchor year {era_year} from the fact sheet's peak/death/"
+                "launch facts; wayback resolves to the capture nearest that "
+                "year, not to whatever the domain serves today)")
+        else:
+            result["note"].append(
+                f"cdx miss -> nearest-capture fallback {fallback} (no anchor "
+                "year in the fact sheet; /web/2/ resolves to the MOST RECENT "
+                "capture -- for parked dead domains that is the parked page)")
         if cdx_state is not None and "no status-200" not in cdx_err:
             cdx_state["fails"] = cdx_state.get("fails", 0) + 1
             if cdx_state["fails"] >= CDX_BREAK_AFTER and not cdx_state.get("tripped"):
@@ -526,9 +735,9 @@ def attempt_subject(post_path: Path, subject: dict, shots_dir: Path,
                 result["note"].append(
                     f"cdx: {cdx_state['fails']} consecutive transport failures; "
                     "remaining subjects skip the CDX lookup and render the "
-                    "nearest-capture form directly")
+                    "era-anchored nearest-capture form directly")
 
-    target = archived_page_url(url, ts)
+    target = archived_page_url(url, ts, era_year)
     result["archived_url"] = target
 
     ok, report, final_url = precheck_archived(target)

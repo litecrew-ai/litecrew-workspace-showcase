@@ -3,7 +3,7 @@ subject: writing
 slug: post-generation-pipeline
 tags: [content-pipeline, python-stdlib, static-site, deterministic-generation, editorial-split]
 related_goals: [internet-archaeology-blog]
-related_tasks: [blog-v0-pipeline, blog-design-overhaul, blog-publish-all, blog-screenshots-and-paths, blog-screenshot-renderer, blog-render-timeout-fix]
+related_tasks: [blog-v0-pipeline, blog-design-overhaul, blog-publish-all, blog-screenshots-and-paths, blog-screenshot-renderer, blog-render-timeout-fix, blog-render-profile-fix]
 related_knowledge: [writing/dead-web-source-catalog.md]
 last_verified_date: 2026-08-29
 status: active
@@ -186,7 +186,11 @@ needs an image-mode equivalent. What generalized:
    `$CHROME_BIN`, else a PATH probe of common names, else macOS app bundles;
    run it once per subject with `--headless=new --screenshot=<tmp>
    --window-size=... --virtual-time-budget=~10000 --timeout=~30000
-   --hide-scrollbars --disable-gpu --user-data-dir=<throwaway profile>`.
+   --hide-scrollbars --disable-gpu --no-first-run
+   --no-default-browser-check --disable-crash-reporter
+   --disable-component-update --disable-background-networking
+   --user-data-dir=<fresh temp profile per render>` (see item 12 for why the
+   profile and the suppression flags are load-bearing).
    The lesson cost one full laptop run (20/20 renders dead): a
    `--virtual-time-budget`-only invocation NEVER fires a capture while a
    network load is pending -- Wayback pages chain every subresource through
@@ -196,7 +200,9 @@ needs an image-mode equivalent. What generalized:
    exits at ~timeout+1s and always writes the PNG, whether the page stalled
    on a hanging subresource or an unroutable host (both measured). Keep the
    wall budget (process-group kill) only as the outer guard with clear
-   headroom, and pipe the browser's stderr tail into the failure log -- on
+   headroom, and pipe the browser's stderr into the failure log with
+   chrome/updater noise lines filtered and BOTH the head (~400) and tail
+   (~500) kept -- on
    the reference chromium it literally says `Page load timed out ...
    N bytes written to file`, which is what makes the next run
    self-diagnosing. Caveat to state honestly: on current new-headless
@@ -223,17 +229,29 @@ needs an image-mode equivalent. What generalized:
    work: skip every subject with one actionable message ("set CHROME_BIN or
    install Chrome/Chromium"), not twenty identical apologies. A broken
    CHROME_BIN must be reported as such, never silently fallen back.
-6. **Budget for the slow index, and degrade to the nearest capture.** CDX
+6. **Budget for the slow index, and degrade to an ERA-ANCHORED nearest
+   capture -- never the bare most-recent form.** CDX
    answered only 5 of 20 lookups inside 5s from a reachable network (a later
    run: 17 of 20 with a 25s budget); the working budget is a 25s timeout,
    one retry, and a circuit breaker that skips remaining lookups after ~4
    consecutive transport failures. A CDX miss of ANY kind (timeout, no
-   status-200 row, open breaker) should not skip the render: fall back to
-   Wayback's nearest-capture form `https://web.archive.org/web/2/<url>`
-   (Wayback redirects "2" to the closest capture), recover the real
+   status-200 row, open breaker) should not skip the render -- but the naive
+   fallback `https://web.archive.org/web/2/<url>` resolves to the MOST
+   RECENT capture Wayback has, and for a dead site whose domain is now
+   parked that means a screenshot of the parked page (observed in the
+   operator's third-run log: altavista resolving to a 2026 parked page).
+   Anchor the fallback instead: `https://web.archive.org/web/<YYYY>/<url>`
+   resolves to the capture nearest that year, so take YYYY from the
+   subject's own sourced fact sheet with a deterministic, unit-tested
+   priority -- a peak phrasing ("most-visited...", "tens of millions...")
+   beats a death phrasing ("shut ... down", "closed", "retired",
+   "bankruptcy", "sunset"; mind verb-object forms like "shut AltaVista
+   down"), which beats a launch phrasing; a sheet with no year degrades to
+   /web/2/ as the documented last resort. Recover the real
    timestamp from the redirect target's final URL when the pre-check fetch
    reports it, and label the plate "nearest capture" when it does not --
-   never date a plate by guesswork. Politeness belongs at the pre-check too:
+   never date a plate by guesswork, and never present the anchor year as the
+   snapshot date. Politeness belongs at the pre-check too:
    one laptop run drew five HTTP 503 archive-challenge pages, so a 503 gets
    a ~15s backoff and exactly one retry, and subjects space ~4s apart.
 7. **Degrade per subject, log every attempt.** Each subject resolves,
@@ -265,6 +283,36 @@ needs an image-mode equivalent. What generalized:
     deliberately closed port through the real subprocess path. The
     environment-dependent tests skipUnless a browser exists, so the suite
     is green on machines without one.
+12. **Environment divergence: a recipe proven on a clean box can hang on a
+    daily-driver machine -- isolate the profile, filter the noise, and ship
+    a self-probe.** A third operator laptop run lost every render to the
+    wall guard with NOTHING but chrome/updater crash-handler noise on
+    stderr. The shipped diagnosis said "no --user-data-dir, so the default
+    profile is locked" -- but code inspection showed the invocation already
+    passed a fresh temp profile per render, and the run's own error string
+    ("75s wall guard") existed only in that code: the laptop had hung WITH
+    the isolation in place. Lessons that generalize: (a) verify a diagnosis
+    against the code and the evidence BEFORE shipping the fix narrative --
+    environment failures attract confident wrong theories; (b) make the
+    invocation maximally environment-independent anyway: fresh temp
+    `--user-data-dir` per render (created and removed around the run, so no
+    dependence on the user's browser state or its singleton locks),
+    `--no-first-run --no-default-browser-check`, and the helper-suppression
+    trio `--disable-crash-reporter --disable-component-update
+    --disable-background-networking`; (c) filter chrome/updater noise lines
+    out of captured stderr and keep BOTH head and tail -- an all-noise
+    stderr with no output file is itself a diagnostic signature, so print
+    an explicit hint for exactly that case; (d) ship an OFFLINE self-probe
+    that runs the exact production invocation (data: URL, so no network)
+    and validates magic/dimensions/a non-blank floor -- expose it as a CLI
+    mode ("the first thing to run on any new machine") and auto-run it
+    fail-fast at the start of the real batch, so a doomed 25-minute run
+    becomes a 10-second diagnosis; (e) never claim the other machine is
+    fixed from a clean box -- claim the recipe is environment-independent
+    and self-verifying, and let the operator's probe be the truth. The
+    profile-lifecycle contract (fresh per render, not pre-created, removed
+    after, never reused) is provable offline with a recorder "browser"
+    script that dumps its argv -- no real browser or network needed.
 
 ### Subpath mount robustness (from the same run)
 
@@ -323,6 +371,20 @@ deterministic scaffolding is honest about being scaffolding.
   self-captures at ~timeout+1s and always writes a PNG (also for unroutable
   hosts). Regression test added; full suite green; see the artifact
   RESULT.md entry for 2026-08-29 (blog-render-timeout-fix).
+- Render-profile fix (environment divergence): the shipped "missing
+  --user-data-dir" diagnosis was disproven by code inspection (the flag was
+  already present, and the operator's error string only exists in that
+  code); invocation hardened anyway (helper-suppression flags,
+  noise-filtered head+tail stderr, explicit all-noise hint), offline
+  self-probe added and wired fail-fast (PASS on this box's chromium,
+  10990 bytes / ~1s), era-anchored /web/<YYYY>/ fallback with a
+  deterministic peak>death>launch year rule (all 20 tracked sheets anchor
+  inside the subject's life; scratch-tree rehearsal showed correct
+  era-anchored URLs end to end), 55 unit tests green, --verify 393 checks
+  ALL PASS; RESULT.md rotated to docs/result-log/archive-1.md. The laptop
+  hang itself is NOT reproducible on this box (no running GUI Chrome) -- the
+  operator's 10-second --probe-render run is the confirming step; see the
+  artifact RESULT.md entry for 2026-08-29 (blog-render-profile-fix).
 
 ## Boundaries and counter-examples
 
@@ -361,10 +423,19 @@ deterministic scaffolding is honest about being scaffolding.
       capture with the browser's own --timeout (a wall kill alone produces
       no file on stalled pages), layer payload guards (http pre-check +
       playback-content check + magic bytes + exact dimensions + calibrated
-      size floor), fall back to the nearest-capture form on index misses and
+      size floor), fall back to an ERA-ANCHORED nearest-capture form on
+      index misses (year from the subject's own fact sheet; the bare
+      most-recent form screenshots whatever parks on the domain today) and
       label unresolved timestamps as such, resolve the browser once and
-      degrade once when absent, log every attempt with the browser's stderr
-      tail, and hash-check bodies when editing front matter of frozen files.
+      degrade once when absent, log every attempt with the browser's
+      noise-filtered stderr (head and tail), and hash-check bodies when
+      editing front matter of frozen files.
+- [ ] For headless-browser stages on foreign machines: fresh temp
+      --user-data-dir per render (created/removed around it), first-run and
+      helper-suppression flags, an offline self-probe through the exact
+      invocation exposed as a CLI mode AND auto-run fail-fast before the
+      batch, and a README troubleshooting table keyed to observed stderr
+      signatures.
 - [ ] For mounts: one URL resolver for all internal refs; page-relative
       default + config-driven prefix mode; a mounted-subpath HTTP browse
       test in verify for both modes.
@@ -384,3 +455,4 @@ deterministic scaffolding is honest about being scaffolding.
 | 2026-08-29 | Merged truthful-images section (two-mode labeling, magic-byte sniffing, per-subject degradation, additive front matter with body-hash post-condition, binary gate split) and subpath-mount section (reproduce-first diagnosis, single URL resolver with path_prefix, mounted-subpath HTTP test in verify) | tasks/blog-screenshots-and-paths.md |
 | 2026-08-29 | Truthful-images section rewritten for the render-don't-fetch strategy: dead-endpoint evidence from a reachable network, subprocess browser invocation with process-group timeout, hang-vs-fast-fail forgery asymmetry and the layered payload guards with locally calibrated size floor, resolve-browser-once degradation, CDX latency budget with circuit breaker, and testing the untestable path without pretending | tasks/blog-screenshot-renderer.md |
 | 2026-08-29 | Render-timeout lesson merged: virtual-time-budget alone never captures while a load is pending (the 20/20 dead-render laptop run), chrome's own --timeout is the capture mechanism (blank-frame caveat on new headless), stderr tails for self-diagnosis, the nearest-capture /web/2/ fallback with timestamp recovery and honest labeling, and 503 backoff at the pre-check | tasks/blog-render-timeout-fix.md |
+| 2026-08-29 | Environment-divergence lesson merged (item 12: verify the diagnosis against the code before shipping the fix narrative; fresh temp profile per render; helper-suppression flags; noise-filtered head+tail stderr with an all-noise hint; offline self-probe as CLI mode + fail-fast pre-flight; recorder-browser profile-lifecycle proof), fallback rewritten to era-anchored /web/<YYYY>/ with the peak>death>launch year rule and the parked-domain hazard of /web/2/ | tasks/blog-render-profile-fix.md |

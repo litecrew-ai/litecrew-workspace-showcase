@@ -178,14 +178,20 @@ published page (decision D11 in `docs/design.md`):
 - **Screenshot plates** are pixels a real headless browser rendered from the
   subject's real archived page. `run.py --fetch-screenshots` resolves a
   representative snapshot (the earliest status-200 capture in the CDX index,
-  falling back to Wayback's nearest capture), then screenshots
+  falling back to Wayback's era-anchored nearest-capture form
+  `/web/<YYYY>/<original-url>`, where YYYY comes from the subject's own fact
+  sheet -- a peak, death, or launch year -- so the fallback lands inside the
+  subject's life instead of on whatever the domain serves today; the
+  `/web/2/` form, which resolves to the MOST RECENT capture, is used only
+  when a sheet carries no year), then screenshots
   `https://web.archive.org/web/<ts>/<original-url>`. The page then prints a
   visible label -- "screenshot: Wayback Machine, snapshot <ts>, fetched
   <date>" -- plus the provenance (subject URL, rendered URL, timestamp, fetch
   date) in the post's front matter and PROVENANCE box. When the render came
-  through the nearest-capture fallback and the redirect did not resolve to a
+  through a nearest-capture fallback and the redirect did not resolve to a
   timestamp, the label says "nearest capture" instead of a date -- never an
-  invented one. Stored binaries are never clobbered; delete
+  invented one, and never the anchor year presented as a snapshot date.
+  Stored binaries are never clobbered; delete
   `assets/screenshots/<slug>.<ext>` to refetch one.
 
   History, so nobody re-walks the dead end: the original implementation
@@ -203,12 +209,20 @@ published page (decision D11 in `docs/design.md`):
   invocation never fires a capture while a Wayback subresource is still
   loading. The render now carries Chrome's own `--timeout` -- the browser
   writes the screenshot when the budget expires regardless of load state,
-  and its stderr tail lands in the failure log (see the render recipe
+  and its filtered stderr lands in the failure log (see the render recipe
   below). One caveat is calibrated and honest: on the reference chromium
   (150, new headless) the timeout capture of a never-loading page is a
   blank frame, which the near-blank guard rejects -- such a subject still
   degrades, but the log then says exactly that, with chrome's own
-  "Page load timed out" line, instead of a silent wall kill.
+  "Page load timed out" line, instead of a silent wall kill. A third laptop
+  run then hung differently -- every render killed at the 75s wall guard
+  with nothing but chrome/updater crash-handler noise on stderr -- while
+  running the code that already passes a fresh temp `--user-data-dir` per
+  render, so the classic default-profile lock does not explain it. That is
+  the environment-divergence case the self-probe (`--probe-render`, below)
+  and the troubleshooting table exist for: the recipe is
+  environment-independent and self-verifying, and the probe lets the
+  operator's own browser prove it in seconds.
 - **Generated plates** are the procedural 760x420 "mini homepage" SVGs from
   `svgart.py`, seeded with a CRC32 of the slug (starfield, bevel frame,
   88x31 buttons, hit counter, barricade stripes), labeled "generated
@@ -227,6 +241,15 @@ copied into `site/assets/` by the builder like the stylesheet.
 
 ### Producing real screenshot plates (the operator / laptop run)
 
+**Run `python3 run.py --probe-render` first on any new machine** (it is the
+first line of the block below). It renders an offline `data:` page through
+the exact production invocation -- fresh temp profile included -- and
+validates the PNG (magic, 1024x640 window, a non-blank floor calibrated at
+blank 3301 / real probe page 10990 bytes on the reference chromium). No
+network, ~1s when healthy: it proves THIS browser can run THIS recipe
+headlessly before any subject time is spent. `--fetch-screenshots` runs the
+same probe automatically and stops before the first subject if it fails.
+
 The fetch stage needs a **headless-capable browser binary** on the machine
 that has egress to `web.archive.org`, plus ~20-50 minutes for 20 subjects
 (each subject: a CDX lookup allowed up to 25s plus one retry, an archived-page
@@ -235,8 +258,13 @@ challenge, a browser render bounded by Chrome's own 30s `--timeout` under a
 75s wall guard, and a 4s inter-subject pause; slow CDX lookups are the usual
 cost, and a CDX miss of any kind -- timeout, no status-200 row, or the
 circuit breaker after repeated transport failures -- falls back to Wayback's
-nearest-capture form `https://web.archive.org/web/2/<canonical-url>`, which
-Wayback redirects to the closest capture it has).
+era-anchored nearest-capture form
+`https://web.archive.org/web/<YYYY>/<canonical-url>`, where YYYY is read
+from the subject's fact sheet -- the first fact matching a peak phrasing
+(the remembered era), else a death phrasing (the last days of the real
+site), else a launch phrasing; the `/web/2/` form, which resolves to the
+MOST RECENT capture Wayback has (for a dead, parked domain that is the
+parked page), is used only when the sheet carries no year at all).
 
 The exact render invocation (constants in `pipeline/screenshots.py`;
 `WINDOW_SIZE` 1024x640, `VIRTUAL_TIME_BUDGET` 10000, `CHROME_TIMEOUT_MS`
@@ -245,7 +273,18 @@ The exact render invocation (constants in `pipeline/screenshots.py`;
     --headless=new --screenshot=<tmp>/shot.png --window-size=1024,640 \
     --virtual-time-budget=10000 --timeout=30000 --hide-scrollbars \
     --disable-gpu --no-first-run --no-default-browser-check \
-    --user-data-dir=<throwaway profile> <archived-page-url>
+    --disable-crash-reporter --disable-component-update \
+    --disable-background-networking \
+    --user-data-dir=<fresh temp profile, created and removed per render> \
+    <archived-page-url>
+
+Environment independence, flag by flag: every render runs in its OWN fresh
+temp `--user-data-dir` (created and removed per render), so nothing depends
+on the machine's browser/profile state or on whether the daily browser is
+running; `--no-first-run` / `--no-default-browser-check` suppress first-run
+dialogs; the `--disable-*` trio keeps the crash reporter, component updater,
+and background networking from spawning helpers at all (fewer processes,
+less stderr noise, no updater side-trips mid-batch).
 
 Why both budgets: `--virtual-time-budget` settles timers but **never fires a
 capture while a network load is pending** (measured on the reference
@@ -253,9 +292,12 @@ chromium against a page with one hanging subresource: no exit, no file,
 killed at the wall); `--timeout` is the mechanism that actually captures --
 the browser exits at ~timeout+1s and always writes the PNG. The 75s wall
 guard exists only for a browser that ignores the flag, and kills the process
-group. Chrome's stderr tail (last ~500 chars) rides along in every failure
-line, and a render captured at timeout is flagged in the log, so the next
-run diagnoses itself.
+group. Chrome's stderr rides along in every failure line with the
+chrome/updater noise lines filtered out and BOTH the first ~400 and last
+~500 chars kept; when nothing survives the filter and no file was written,
+the report says so explicitly and points at `--probe-render` (an all-noise
+stderr with no file is itself a signature -- see the table below). A render
+captured at timeout is flagged in the log, so the next run diagnoses itself.
 
 Browser resolution order, printed as the first line of every run:
 
@@ -270,6 +312,7 @@ The whole run is one copy-paste block:
     cd /path/to/internet-archaeology-blog
     export CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable \
       || command -v chromium || command -v chromium-browser || command -v msedge)"
+    python3 run.py --probe-render
     python3 run.py --fetch-screenshots
     python3 run.py --rebuild-only
     python3 run.py --verify
@@ -278,13 +321,17 @@ Notes for that run:
 
 - On macOS the `export` line usually comes up empty; that is fine -- unset or
   empty `CHROME_BIN` falls through to the PATH probe and the app bundles.
+- `--probe-render` is the 10-second health check of the browser environment;
+  if it fails or hangs, fix that first (its message says how) -- the fetch
+  run would stop on the same failure anyway, by design.
 - `--fetch-screenshots` already rebuilds the site at the end;
   `--rebuild-only` is included as an explicit, idempotent safety line.
 - Optional, before or after: `python3 -m unittest discover -s tests -v`
-  (offline unit tests for the URL construction, the render flag set, the
-  503 backoff, payload guards, browser detection, front-matter editor, and
-  scratch-build consistency; the local-render tests -- including a
-  stalled-subresource regression case that reproduces the "never finished
+  (offline unit tests for the URL construction and era anchoring, the render
+  flag contract, the stderr filter, the fresh-temp-profile lifecycle, the
+  probe, the 503 backoff, payload guards, browser detection, front-matter
+  editor, and scratch-build consistency; the local-render tests -- including
+  a stalled-subresource regression case that reproduces the "never finished
   loading" failure with a hanging loopback subresource -- are skipped
   automatically when no browser exists).
 - Every stored plate survives four guards before it is written: the archived
@@ -300,6 +347,22 @@ Notes for that run:
   `browser: none found -- set CHROME_BIN=... or install ...`, touches no
   network, and leaves every post on the labeled generated plate.
 
+### Troubleshooting by observed signature
+
+Every render failure line carries Chrome's filtered stderr (head ~400 +
+tail ~500 chars, chrome/updater noise dropped); match what you see against
+this table before changing anything:
+
+| Observed signature | Most likely cause | What to do |
+| --- | --- | --- |
+| `wall guard killed the process group ... chrome stderr: filtered stderr is empty ...` -- the raw stderr was only crash-handler / updater VERBOSE noise, no file was written, typically on a machine whose daily browser is running | the browser stalled before rendering. Not the classic default-profile lock in this code -- every render already passes a fresh temp `--user-data-dir`; suspects are app-bundle singleton behavior, flag-set divergence in that Chrome channel, or helper interference | run `python3 run.py --probe-render` (seconds, offline). If it fails or hangs, point `CHROME_BIN` at a chromium build, or close the running browser once and re-probe; the fetch run runs this probe automatically and stops early |
+| `Page load timed out ... bytes written` followed by `rejected: png only N bytes (< ... floor)` | slow archived page: Chrome captured at its `--timeout` before the page composited (new headless does not composite a never-loading page) | raise `CHROME_TIMEOUT_MS` in `pipeline/screenshots.py` (e.g. 60000) and re-run for just those subjects (nothing was stored) |
+| `rejected: png only N bytes (< floor)` with no timeout line | blank or browser-error render (wrong-page capture, error page) | the guards did their job; check the subject's `archived_url` in RESULT.md and re-run that subject |
+| `png is WxH, expected 1024x640` | render-window drift (a flag or constant changed) | compare the invocation above with `browser_cmd()`; fix the constant or the window flag |
+| `archived page pre-check: HTTP 503 ... (503; backed off and retried once)` | Internet Archive challenge / rate limit | wait a while and re-run; the 4s spacing and the 15s backoff are already in place |
+| `cdx: timeout` / `cdx: URL error` lines until `circuit open` | CDX index slow or unreachable from that network | subjects still render through the era-anchored fallback; re-run when CDX answers, or accept the fallback captures |
+| `pre-flight render probe: FAIL -- ...` and the batch stops before subject 1 | the browser cannot run this recipe headlessly at all | read the probe's hint (same as row 1); fix the browser environment first |
+
 **Coordination with an existing clone.** A previous laptop run appended its
 own entries to this repository's `RESULT.md` and may have left local
 artifacts. Pull before re-running, and if your clone recorded a run that this
@@ -307,8 +370,13 @@ repository never saw, expect `RESULT.md` to differ until the operator
 reconciles the two histories (do not attempt to reconcile from inside the
 pipeline). If `RESULT.md` approaches the 100KB text gate, the fetch run
 automatically appends a condensed outcome summary instead of per-subject
-lines and says so in the entry; rotating the historical sections out is an
-operator decision.
+lines and says so in the entry; past that, the documented rotation policy
+applies: when `RESULT.md` exceeds ~60KB, move all but the newest
+verification-methods section and the last ~10 run entries into the next
+`docs/result-log/archive-<N>.md` (nothing is deleted -- `archive-1.md`
+already holds the 2026-08-29 v0-through-render-timeout-fix history, moved
+when the file reached 99.6KB), and `run.py` prints a rotation note once the
+threshold is passed.
 
 ## Key decisions
 

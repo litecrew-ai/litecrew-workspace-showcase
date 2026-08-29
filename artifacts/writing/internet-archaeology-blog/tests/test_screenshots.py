@@ -13,8 +13,11 @@ so a test can never publish an image or edit a real post.
 
 from __future__ import annotations
 
+import base64
 import functools
 import http.server
+import json
+import os
 import shutil
 import struct
 import sys
@@ -62,6 +65,21 @@ class TestUrlConstruction(unittest.TestCase):
             "https://web.archive.org/web/2/http://winamp.com",
         )
 
+    def test_cdx_miss_with_era_year_uses_year_anchored_form(self):
+        # /web/2/ resolves to the MOST RECENT capture -- for a dead, parked
+        # domain that is the parked page. The era anchor keeps the fallback
+        # inside the subject's life.
+        self.assertEqual(
+            screenshots.archived_page_url("http://altavista.com", None, 1999),
+            "https://web.archive.org/web/1999/http://altavista.com",
+        )
+
+    def test_resolved_timestamp_beats_the_era_anchor(self):
+        self.assertEqual(
+            screenshots.archived_page_url("http://a.com", "19990401120000", 2013),
+            "https://web.archive.org/web/19990401120000/http://a.com",
+        )
+
     def test_playback_url_strips_slashes_from_timestamp(self):
         self.assertEqual(
             screenshots.archived_page_url("http://a.com", "/20010130072000/"),
@@ -98,6 +116,69 @@ class TestUrlConstruction(unittest.TestCase):
         self.assertIsNone(screenshots.timestamp_from_final_url(""))
 
 
+class TestEraAnchorYear(unittest.TestCase):
+    """Anchor selection for the era-anchored fallback: peak phrasing beats
+    death phrasing beats launch phrasing; no year -> None -> /web/2/."""
+
+    def test_peak_phrasing_beats_death_and_launch(self):
+        sheet = {"facts": [
+            {"text": "Launched in 1999."},
+            {"text": "In 2006 it was the most-visited website in the country."},
+            {"text": "Shut down in 2017."},
+        ]}
+        self.assertEqual(screenshots.era_anchor_year(sheet), 2006)
+
+    def test_peak_without_a_year_does_not_count(self):
+        # "tens of millions" with no 4-digit year in the fact cannot anchor.
+        sheet = {"facts": [
+            {"text": "Reported to have tens of millions of users at its height."},
+            {"text": "Closed in 2010."},
+        ]}
+        self.assertEqual(screenshots.era_anchor_year(sheet), 2010)
+
+    def test_death_phrasing_when_no_peak(self):
+        sheet = {"facts": [
+            {"text": "Launched on December 15, 1995."},
+            {"text": "Yahoo! shut AltaVista down on July 8, 2013."},
+        ]}
+        self.assertEqual(screenshots.era_anchor_year(sheet), 2013)
+
+    def test_launch_phrasing_is_the_last_resort(self):
+        sheet = {"facts": [{"text": "Created in 1995 by Tom Fulp."}]}
+        self.assertEqual(screenshots.era_anchor_year(sheet), 1995)
+
+    def test_founder_death_is_not_a_site_death(self):
+        sheet = {"facts": [
+            {"text": "Founded in 1999 by Rich Kyanka as a comedy website."},
+            {"text": "Kyanka died in November 2021, as widely reported."},
+        ]}
+        self.assertEqual(screenshots.era_anchor_year(sheet), 1999)
+
+    def test_no_years_anywhere_yields_none(self):
+        self.assertIsNone(screenshots.era_anchor_year(
+            {"facts": [{"text": "no dates here"}]}))
+        self.assertIsNone(screenshots.era_anchor_year({"facts": []}))
+        self.assertIsNone(screenshots.era_anchor_year({}))
+        self.assertIsNone(screenshots.era_anchor_year(None))
+
+    def test_tracked_fact_sheets_anchor_inside_the_subject_life(self):
+        # Grounded expectations from the tracked data/facts sheets (each is
+        # the first fact matching the documented peak/death/launch order).
+        expected = {
+            "altavista": 2013, "myspace": 2006, "newgrounds": 1995,
+            "somethingawful": 1999, "geocities": 2009, "napster": 2000,
+        }
+        base = ROOT / "data" / "facts"
+        for slug, year in sorted(expected.items()):
+            sheet = json.loads((base / f"{slug}.json").read_text(encoding="utf-8"))
+            self.assertEqual(screenshots.era_anchor_year(sheet), year, slug)
+        # Every tracked sheet yields a sane year (or None) -- never garbage.
+        for p in sorted(base.glob("*.json")):
+            sheet = json.loads(p.read_text(encoding="utf-8"))
+            year = screenshots.era_anchor_year(sheet)
+            self.assertTrue(year is None or 1994 <= year <= 2026, p.stem)
+
+
 class TestBrowserInvocation(unittest.TestCase):
     """The flag set is a contract (documented in the README as invoked); pin
     it without launching anything."""
@@ -124,8 +205,13 @@ class TestBrowserInvocation(unittest.TestCase):
         self.assertEqual(cmd[0], "/usr/bin/chromium")
         for flag in ("--headless=new", "--hide-scrollbars", "--disable-gpu",
                      "--no-first-run", "--no-default-browser-check",
+                     "--disable-crash-reporter", "--disable-component-update",
+                     "--disable-background-networking",
                      "--window-size=1024,640"):
             self.assertIn(flag, cmd)
+        # Environment independence: every render passes its OWN temp profile.
+        self.assertTrue(any(a.startswith("--user-data-dir=/tmp/profile")
+                            for a in cmd), cmd)
         self.assertEqual(cmd[-1],
                          "https://web.archive.org/web/19981205015145/http://winamp.com")
 
@@ -135,6 +221,194 @@ class TestBrowserInvocation(unittest.TestCase):
         # ignores the flag.
         self.assertGreater(screenshots.RENDER_TIMEOUT,
                            screenshots.CHROME_TIMEOUT_MS / 1000.0 + 15)
+
+
+class TestStderrReporting(unittest.TestCase):
+    """Failure-report stderr: chrome/updater noise dropped, head AND tail
+    kept, all-noise yields "" (callers then print the probe hint)."""
+
+    def test_noise_lines_are_dropped_and_head_and_tail_kept(self):
+        detail = b"".join(
+            b"render detail line %03d with plenty of ordinary text\n" % i
+            for i in range(40))
+        err = (b"fatal launch error in the beginning\n"
+               + b"VERBOSE2 component updater tick\n" * 60
+               + b"crash_handler connected to mach service\n" * 60
+               + detail
+               + b"final render failure at the end\n")
+        out = screenshots._stderr_report(err)
+        self.assertIn("fatal launch error", out)
+        self.assertIn("final render failure at the end", out)
+        self.assertIn("...[snip]...", out)  # middle is repetition, both ends kept
+        self.assertNotIn("VERBOSE2", out)
+        self.assertNotIn("crash_handler", out)
+        self.assertNotIn("updater", out)
+        self.assertLessEqual(len(out), screenshots.STDERR_HEAD_CHARS
+                             + screenshots.STDERR_TAIL_CHARS + 40)
+
+    def test_short_reports_are_kept_whole_without_snip(self):
+        self.assertEqual(screenshots._stderr_report(b"one stderr line\n"),
+                         "one stderr line")
+
+    def test_all_noise_or_nothing_yields_empty(self):
+        self.assertEqual(screenshots._stderr_report(
+            b"crash_handler connected\nVERBOSE2 updater\n"), "")
+        self.assertEqual(screenshots._stderr_report(None), "")
+        self.assertEqual(screenshots._stderr_report(b""), "")
+
+    def test_hint_mentions_probe_and_temp_profile(self):
+        # The all-noise-no-file signature must point at the probe and state
+        # that a fresh temp profile was already in the invocation.
+        self.assertIn("--probe-render", screenshots.PROFILE_LOCK_HINT)
+        self.assertIn("--user-data-dir", screenshots.PROFILE_LOCK_HINT)
+
+
+_RECORDER_TEMPLATE = """#!{python}
+import base64, json, os, sys
+argv = sys.argv[1:]
+ud = next((a for a in argv if a.startswith("--user-data-dir=")), None)
+shot = next((a for a in argv if a.startswith("--screenshot=")), None)
+profile_path = ud.split("=", 1)[1] if ud else None
+info = {{"profile_arg": ud,
+        "profile_precreated": bool(profile_path) and os.path.isdir(profile_path),
+        "render_root_existed": bool(profile_path)
+                               and os.path.isdir(os.path.dirname(profile_path))}}
+if shot:
+    with open(shot.split("=", 1)[1], "wb") as fh:
+        fh.write(base64.b64decode("{png_b64}"))
+out = os.environ.get("GAZETTE_RECORDER_OUT")
+if out:
+    with open(out, "a") as fh:
+        fh.write(json.dumps(info) + "\\n")
+"""
+
+# A "browser" that behaves like the operator's hung laptop run: spawns,
+# spills nothing but chrome/updater noise on stderr, writes no file, exits 1.
+_NOISE_BROWSER_TEMPLATE = """#!{python}
+import sys
+sys.stderr.write("crash_handler connected to mach service\\n" * 20)
+sys.stderr.write("VERBOSE2 component updater tick\\n" * 20)
+sys.exit(1)
+"""
+
+
+class TestFreshTempProfilePerRender(unittest.TestCase):
+    """The environment-independence contract, proven with a recorder
+    'browser' (no network, no real browser): every render receives its OWN
+    fresh temp --user-data-dir that exists at launch and is removed after."""
+
+    def test_profile_is_fresh_per_render_and_removed_after(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "records.jsonl"
+            png_b64 = base64.b64encode(
+                make_png(1024, 640, pad=screenshots.MIN_PNG_BYTES)
+            ).decode("ascii")
+            script = Path(tmp) / "recorder-browser"
+            script.write_text(
+                _RECORDER_TEMPLATE.format(python=sys.executable, png_b64=png_b64),
+                encoding="utf-8")
+            script.chmod(0o755)
+            old = os.environ.get("GAZETTE_RECORDER_OUT")
+            os.environ["GAZETTE_RECORDER_OUT"] = str(out)
+            try:
+                reports = [
+                    screenshots.render_screenshot(
+                        str(script), "data:text/html,<h1>probe</h1>")
+                    for _ in range(2)
+                ]
+            finally:
+                if old is None:
+                    del os.environ["GAZETTE_RECORDER_OUT"]
+                else:
+                    os.environ["GAZETTE_RECORDER_OUT"] = old
+            for data, report in reports:
+                self.assertIsNotNone(data, report)
+                self.assertEqual(screenshots.validate_png(data), "")
+            records = [json.loads(l) for l in
+                       out.read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(len(records), 2)
+            for r in records:
+                self.assertTrue(r["profile_arg"], "--user-data-dir flag present")
+                # The render root (per-render TemporaryDirectory) exists at
+                # launch; the profile path itself does NOT -- the browser
+                # creates it, so no shared or pre-existing profile state can
+                # leak between renders.
+                self.assertTrue(r["render_root_existed"],
+                                "per-render temp root existed at launch")
+                self.assertFalse(r["profile_precreated"],
+                                 "profile path must be fresh, not pre-existing")
+            dirs = {r["profile_arg"].split("=", 1)[1] for r in records}
+            roots = {str(Path(d).parent) for d in dirs}
+            self.assertEqual(len(roots), 2, "each render got its own profile dir")
+            for d in dirs:
+                self.assertFalse(Path(d).exists(),
+                                 "temp profile removed after the render")
+                self.assertFalse(Path(d).parent.exists(),
+                                 "per-render temp root removed afterwards")
+
+    def test_noise_only_failure_prints_the_probe_hint(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            script = Path(tmp) / "noise-browser"
+            script.write_text(
+                _NOISE_BROWSER_TEMPLATE.format(python=sys.executable),
+                encoding="utf-8")
+            script.chmod(0o755)
+            data, report = screenshots.render_screenshot(
+                str(script), "data:text/html,<h1>x</h1>")
+            self.assertIsNone(data)
+            # All-noise stderr + no file -> the explicit hint, not "(empty)".
+            self.assertIn("filtered stderr is empty", report)
+            self.assertIn("--probe-render", report)
+            self.assertIn("fresh temp --user-data-dir", report)
+
+
+class TestProbe(unittest.TestCase):
+    """The offline self-probe: page is a data: URL, the assessment matrix is
+    pure, and (when a browser exists) the probe passes through the real
+    invocation path."""
+
+    def test_probe_url_is_an_offline_data_url(self):
+        self.assertTrue(screenshots.PROBE_URL.startswith("data:text/html,"))
+        # No network reference smuggled into the encoded page.
+        self.assertNotIn("http", screenshots.PROBE_URL.split(",", 1)[1])
+
+    def test_probe_assessment_matrix(self):
+        # no bytes
+        ok, _ = screenshots.probe_assess(None, "render failed somehow")
+        self.assertFalse(ok)
+        # not a png
+        ok, _ = screenshots.probe_assess(b"<html>not a png</html>", "r")
+        self.assertFalse(ok)
+        # wrong dimensions
+        ok, _ = screenshots.probe_assess(
+            make_png(800, 600, pad=screenshots.MIN_PNG_BYTES), "r")
+        self.assertFalse(ok)
+        # near-blank capture (under the probe floor)
+        ok, _ = screenshots.probe_assess(make_png(1024, 640), "r")
+        self.assertFalse(ok)
+        # valid: right dims and past the probe floor
+        ok, reason = screenshots.probe_assess(
+            make_png(1024, 640, pad=screenshots.PROBE_MIN_PNG_BYTES), "r")
+        self.assertTrue(ok, reason)
+
+    def test_probe_floor_separates_blank_from_real_page(self):
+        # Calibration contract: blank render 3301 < probe floor < measured
+        # real probe capture 10990 (reference chromium), margin on both sides.
+        self.assertLess(3301, screenshots.PROBE_MIN_PNG_BYTES)
+        self.assertLess(screenshots.PROBE_MIN_PNG_BYTES, 10990)
+
+
+@unittest.skipUnless(screenshots.find_browser()[0], "no headless browser on this machine")
+class TestProbeRenderReal(unittest.TestCase):
+    def test_probe_render_passes_on_this_browser(self):
+        browser = screenshots.find_browser()[0]
+        r = screenshots.probe_render(browser)
+        self.assertTrue(r["ok"], f"{r['reason']} | {r['render_report']}")
+        self.assertGreaterEqual(r["bytes"], screenshots.PROBE_MIN_PNG_BYTES)
+        self.assertLess(r["elapsed_s"], screenshots.RENDER_TIMEOUT)
+        # The printed flag list is the production invocation, probe URL last.
+        self.assertEqual(r["flags"][-1], screenshots.PROBE_URL)
+        self.assertTrue(any(a.startswith("--user-data-dir=") for a in r["flags"]))
 
 
 class TestPayloadGuards(unittest.TestCase):

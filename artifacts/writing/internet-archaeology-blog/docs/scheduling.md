@@ -77,9 +77,15 @@ jobs:
           CHROME_BIN: /usr/bin/google-chrome
         run: python3 run.py --fetch-screenshots || true
         # GitHub-hosted runners have egress to web.archive.org, so this is
-        # where real screenshot plates come from: the step resolves each
-        # subject's snapshot via the Wayback CDX API (25s timeout + retry;
-        # a miss falls back to the nearest-capture /web/2/ form) and renders
+        # where real screenshot plates come from: a fail-fast offline render
+        # probe runs first (data: page through the exact invocation, fresh
+        # temp profile included -- a browser that cannot run the recipe
+        # headlessly stops the step before any subject time is spent), then
+        # the step resolves each subject's snapshot via the Wayback CDX API
+        # (25s timeout + retry; a miss falls back to the era-anchored
+        # /web/<YYYY>/ form using the fact sheet's peak/death/launch year --
+        # /web/2/, which resolves to the MOST RECENT capture, only when the
+        # sheet has no year) and renders
         # https://web.archive.org/web/<ts>/<url> with the runner's Chrome in
         # headless mode -- no packages installed, the browser is invoked as a
         # subprocess. Chrome's own --timeout (30s) is the capture bound; the
