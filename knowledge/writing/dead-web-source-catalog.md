@@ -3,7 +3,7 @@ subject: writing
 slug: dead-web-source-catalog
 tags: [dead-web, keyless-apis, hn-algolia, wikipedia-api, wayback-cdx, research-sources]
 related_goals: [internet-archaeology-blog]
-related_tasks: [blog-v0-pipeline, blog-screenshots-and-paths]
+related_tasks: [blog-v0-pipeline, blog-screenshots-and-paths, blog-screenshot-renderer]
 last_verified_date: 2026-08-29
 status: active
 ---
@@ -59,6 +59,15 @@ answer, or you need citable reaction evidence for a shutdown story.
   deaths (e.g. 2001 Napster) need per-subject queries or seed-corpus seeding.
 - Algolia relevance search outranks recency; keep `points>50` to suppress
   noise, then filter by title substring match against your subject aliases.
+- CDX latency is routine, not failure: from a reachable network it answered
+  5/20 lookups inside 5s and timed out on the rest. A 5s timeout throws away
+  most of the index; 25s + one retry + a circuit breaker after repeated
+  transport failures is the working budget, with ~2s between subjects to
+  stay out of the 503 rate-limit class.
+- A documented-but-dead endpoint (the screenshot service) looks identical to
+  an outage from inside an unreachable network. Only a run from a reachable
+  network can tell "dead" from "blocked" -- get that evidence before
+  designing around either.
 
 ### Verification
 
@@ -74,6 +83,17 @@ per-subject for all 20 subjects (`Errno 101`). The fetcher exists as an
 operator-runnable step (`run.py --fetch-screenshots`) for runners with wider
 egress; until it succeeds somewhere, all plates are honestly labeled generated
 memorial art.
+
+Definitive 2026-08-29 (Task blog-screenshot-renderer, operator laptop run from
+a network WITH archive egress): the screenshot endpoint is **dead** -- it
+returned HTTP 404 with an HTML error page for every one of the 20 subjects
+(plus one 503 challenge page). It is not an outage to wait out; do not build
+on it. The same run showed CDX is alive but slow: 5 of 20 lookups answered
+inside 5s, the rest timed out -- budget a 25s timeout plus one retry, and
+expect to fall back to Wayback's nearest-capture form. The working pattern is
+**render, don't fetch**: resolve a timestamp via CDX, then screenshot
+`https://web.archive.org/web/<ts>/<original-url>` with a headless browser
+(see `post-generation-pipeline.md`, truthful-images section).
 
 ## Boundaries and counter-examples
 
@@ -102,3 +122,4 @@ memorial art.
 | ---------- | -------------------------------------------- | -------------------------- |
 | 2026-08-29 | Initial version from v0 blog build           | tasks/blog-v0-pipeline.md  |
 | 2026-08-29 | Added Wayback screenshot-endpoint reachability + fetcher pointer | tasks/blog-screenshots-and-paths.md |
+| 2026-08-29 | Screenshot endpoint marked dead with reachable-network evidence (404 html x 20); CDX slow-but-alive timings; render-don't-fetch pointer | tasks/blog-screenshot-renderer.md |

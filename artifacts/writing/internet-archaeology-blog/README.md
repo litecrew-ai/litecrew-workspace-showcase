@@ -22,8 +22,9 @@ read as tech-insider). Recorded here per the Task's naming requirement.
     python3 run.py --posts 3   # draft up to 3 new subjects this run
     python3 run.py --rebuild-only
     python3 run.py --fetch-screenshots
-                                # fetch real Wayback Machine screenshots for
-                                # every subject (needs egress to
+                                # render real archived pages for every
+                                # subject with a headless browser (located via
+                                # CHROME_BIN or a PATH probe; needs egress to
                                 # web.archive.org); every attempt logged in
                                 # RESULT.md; failures degrade to the labeled
                                 # generated plate -- never a stand-in image
@@ -174,17 +175,25 @@ this environment, so v0 calls no LLM.
 Every post carries exactly one plate, and the plate's mode is part of the
 published page (decision D11 in `docs/design.md`):
 
-- **Screenshot plates** are bytes actually fetched from the Internet Archive
-  Wayback Machine for the subject's real canonical URL. `run.py
-  --fetch-screenshots` looks up a representative snapshot (the earliest
-  status-200 capture in the CDX index), downloads
-  `https://web.archive.org/screenshot/<url>?timestamp=<ts>`, and stores the
-  binary only when the payload is a real PNG/JPEG (magic-byte sniffed; an
-  HTML error page is a failure, not a screenshot). The page then prints a
+- **Screenshot plates** are pixels a real headless browser rendered from the
+  subject's real archived page. `run.py --fetch-screenshots` resolves a
+  representative snapshot (the earliest status-200 capture in the CDX index,
+  falling back to Wayback's nearest capture), then screenshots
+  `https://web.archive.org/web/<ts>/<original-url>`. The page then prints a
   visible label -- "screenshot: Wayback Machine, snapshot <ts>, fetched
-  <date>" -- plus the provenance (subject URL, timestamp, fetch date) in the
-  post's front matter and PROVENANCE box. Stored binaries are never
-  clobbered; delete `assets/screenshots/<slug>.<ext>` to refetch one.
+  <date>" -- plus the provenance (subject URL, rendered URL, timestamp, fetch
+  date) in the post's front matter and PROVENANCE box. Stored binaries are
+  never clobbered; delete `assets/screenshots/<slug>.<ext>` to refetch one.
+
+  History, so nobody re-walks the dead end: the original implementation
+  called the documented screenshot service
+  `https://web.archive.org/screenshot/<url>`. An operator run from a network
+  with archive egress (2026-08-29) recorded **HTTP 404 with an HTML error
+  page for all 20 subjects** -- the service is dead, and the fetcher no
+  longer calls it. The same run recorded CDX answering only 5 of 20 lookups
+  inside 5s, which is why the CDX client now uses a 25s timeout, one retry,
+  a circuit breaker after repeated transport failures, and a ~2s
+  inter-subject delay.
 - **Generated plates** are the procedural 760x420 "mini homepage" SVGs from
   `svgart.py`, seeded with a CRC32 of the slug (starfield, bevel frame,
   88x31 buttons, hit counter, barricade stripes), labeled "generated
@@ -200,6 +209,65 @@ rendered art, and stored binaries, so nothing can be mislabeled. SVGs are
 inlined into the HTML and also saved standalone under `site/assets/`;
 screenshot binaries live in `assets/screenshots/` (source assets) and are
 copied into `site/assets/` by the builder like the stylesheet.
+
+### Producing real screenshot plates (the operator / laptop run)
+
+The fetch stage needs a **headless-capable browser binary** on the machine
+that has egress to `web.archive.org`, plus ~25-45 minutes for 20 subjects
+(each subject: a CDX lookup allowed up to 25s plus one retry, an archived-page
+pre-check at 20s, a browser render allowed 45s, a 2s inter-subject pause;
+slow CDX lookups are the usual cost, and repeated transport failures trip a
+circuit breaker that skips straight to the nearest-capture form).
+
+Browser resolution order, printed as the first line of every run:
+
+1. `$CHROME_BIN` when it points at an executable file (a broken CHROME_BIN is
+   reported with the fix, never silently ignored);
+2. a PATH probe of `google-chrome`, `google-chrome-stable`, `chromium`,
+   `chromium-browser`, `msedge`, `chrome`, `edge`;
+3. the macOS app bundles for Chrome, Chromium, and Edge.
+
+The whole run is one copy-paste block:
+
+    cd /path/to/internet-archaeology-blog
+    export CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable \
+      || command -v chromium || command -v chromium-browser || command -v msedge)"
+    python3 run.py --fetch-screenshots
+    python3 run.py --rebuild-only
+    python3 run.py --verify
+
+Notes for that run:
+
+- On macOS the `export` line usually comes up empty; that is fine -- unset or
+  empty `CHROME_BIN` falls through to the PATH probe and the app bundles.
+- `--fetch-screenshots` already rebuilds the site at the end;
+  `--rebuild-only` is included as an explicit, idempotent safety line.
+- Optional, before or after: `python3 -m unittest discover -s tests -v`
+  (offline unit tests for the URL construction, payload guards, browser
+  detection, front-matter editor, and scratch-build consistency; the two
+  local-render tests are skipped automatically when no browser exists).
+- Every stored plate survives four guards before it is written: the archived
+  URL must answer HTTP 200 and look like a Wayback playback page, the render
+  must be a PNG with exactly the 1024x640 window, and it must clear a
+  calibrated near-blank size floor (a blank page renders ~3KB and a browser
+  error page ~22KB on the reference chromium; real content lands far higher).
+  Anything else degrades that subject to the labeled generated plate with the
+  reason in RESULT.md. A subject whose render is rejected can be retried by
+  simply re-running (nothing was stored), or by deleting
+  `assets/screenshots/<slug>.png` first if a previous run stored one.
+- If no browser is found at all, the run degrades **once** with the message
+  `browser: none found -- set CHROME_BIN=... or install ...`, touches no
+  network, and leaves every post on the labeled generated plate.
+
+**Coordination with an existing clone.** A previous laptop run appended its
+own entries to this repository's `RESULT.md` and may have left local
+artifacts. Pull before re-running, and if your clone recorded a run that this
+repository never saw, expect `RESULT.md` to differ until the operator
+reconciles the two histories (do not attempt to reconcile from inside the
+pipeline). If `RESULT.md` approaches the 100KB text gate, the fetch run
+automatically appends a condensed outcome summary instead of per-subject
+lines and says so in the entry; rotating the historical sections out is an
+operator decision.
 
 ## Key decisions
 
@@ -240,16 +308,20 @@ copied into `site/assets/` by the builder like the stylesheet.
   signatures; see RESULT.md), so category discovery and lifespan metadata
   run in fallback mode; the code paths are live but were exercised only by
   their failure handling here.
-- Real screenshots cannot be fetched from this build environment
-  (web.archive.org is network-unreachable here; see RESULT.md for every
-  recorded attempt). All 20 plates therefore ship as honestly labeled
-  generated art. The `--fetch-screenshots` stage is the operator-runnable
-  path: run it (or wire it into CI, see `docs/scheduling.md`) from any
-  machine with egress to web.archive.org and the fetched plates replace the
-  generated ones on rebuild. Screenshot binaries are exempt from the
-  100KB-per-text-file gate by design and are individually size-reported in
-  RESULT.md and by `--verify`; the operator decides whether to keep them in
-  the repository.
+- Real screenshots cannot be produced from this build environment
+  (web.archive.org is network-unreachable here -- connections hang until
+  timeout; see RESULT.md for every recorded attempt, including the full
+  render-path rehearsal that degrades 20/20). All 20 plates therefore ship
+  as honestly labeled generated art. The `--fetch-screenshots` stage is the
+  operator-runnable path: run it (or wire it into CI, see
+  `docs/scheduling.md`) from any machine with a Chrome/Chromium-class browser
+  and egress to web.archive.org, and the rendered plates replace the
+  generated ones on rebuild. The browser machinery itself (subprocess
+  invocation, payload guards) is exercised locally against loopback by the
+  unit tests, including on this box, which does carry a chromium binary.
+  Screenshot binaries are exempt from the 100KB-per-text-file gate by design
+  and are individually size-reported in RESULT.md and by `--verify`; the
+  operator decides whether to keep them in the repository.
 - No LLM API is called anywhere; drafting is deterministic assembly, which
   produces scaffolds, not prose.
 - The `base_url` in `site_config.json` is a documented placeholder; there is

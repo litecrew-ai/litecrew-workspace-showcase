@@ -1892,3 +1892,92 @@ prior verification records (553/534/442).
 - binary asset size report: no screenshot binaries stored
 - full per-check listing printed to stdout; this record carries section outcomes, methods, and all failures
 
+### Run 2026-08-29 19:33:57
+
+- mode: fetch-screenshots (render strategy: resolve via CDX, then screenshot https://web.archive.org/web/<ts>/<url> with a headless browser; the former /screenshot/ endpoint returned 404 html for every subject in the operator run of 2026-08-29 and is no longer called)
+- browser: chromium found at /usr/bin/chromium (PATH probe)
+- subjects attempted: 20; screenshots stored: 0; degraded to generated art: 20
+- post bodies byte-identical after front-matter updates (sha256): yes
+- RESULT.md near the size gate (89.8KB of 100KB); per-subject lines kept on stdout only; condensed outcomes:
+-   cdx http: 20 subject(s) [aim, altavista, cuil, delicious, digg, etoys, friendster, geocities, google-plus, google-reader, msn-messenger, myspace, napster, newgrounds, pets-com, posterous, somethingawful, stumbleupon, vine, winamp]
+- no binaries stored this run (nothing to size-report)
+- site rebuilt: 20 published post(s)
+
+### Run 2026-08-29 19:36:08
+
+- mode: fetch-screenshots (render strategy: resolve via CDX, then screenshot https://web.archive.org/web/<ts>/<url> with a headless browser; the former /screenshot/ endpoint returned 404 html for every subject in the operator run of 2026-08-29 and is no longer called)
+- browser: none found -- set CHROME_BIN=/path/to/a/chrome-or-chromium binary, or install Google Chrome / Chromium / Microsoft Edge, then re-run python3 run.py --fetch-screenshots
+- subjects attempted: 20; screenshots stored: 0; degraded to generated art: 20
+- post bodies byte-identical after front-matter updates (sha256): yes
+- skipped (no browser binary): aim, altavista, cuil, delicious, digg, etoys, friendster, geocities, google-plus, google-reader, msn-messenger, myspace, napster, newgrounds, pets-com, posterous, somethingawful, stumbleupon, vine, winamp
+- no binaries stored this run (nothing to size-report)
+- site rebuilt: 20 published post(s)
+
+### Run 2026-08-29 19:36:26
+
+- mode: task diagnosis record (blog-screenshot-renderer) -- why the fetch strategy changed
+- operator laptop run 2026-08-29 (network WITH archive egress), on the record: the
+-   https://web.archive.org/screenshot/<url> endpoint returned HTTP 404 with an html
+-   error page for all 20 subjects (plus one 503 challenge page for somethingawful)
+-   -- the service is dead; the dependency is removed and the endpoint is kept only
+-   as a tombstone constant in pipeline/screenshots.py
+- same run, CDX: answered inside 5s for 5 of 20 subjects (delicious 20031004064641,
+-   etoys 20010130072000, google-plus 20120215235515, msn-messenger 19991012062956,
+-   winamp 19981205015145) and timed out for the other 15 -> CDX client hardened:
+-   25s timeout, one retry, 200-status preference kept, circuit breaker after 4
+-   consecutive transport failures, ~2s inter-subject delay
+- new strategy: render, do not fetch -- screenshot
+-   https://web.archive.org/web/<ts>/<original-url> with a headless browser located
+-   via CHROME_BIN / PATH probe / macOS bundles (subprocess, stdlib only)
+- payload-guard calibration on this box chromium (1024x640 headless): blank page
+-   3301 bytes; browser error page (closed loopback port) 21768 bytes; real content
+-   page (gazette index served on loopback) 67398 bytes -> near-blank floor 24576
+- hang behavior measured: an unroutable host makes the browser never exit and write
+-   no file (killed at 100s in the probe) -> the render owns a 45s wall clock and
+-   kills the process group; a fast-failing target writes a genuine png of the
+-   browser error page, which is why the floor + dimension + pre-check guards exist
+
+### Run 2026-08-29 19:36:27
+
+- mode: verify -- 393 checks, ALL PASS
+- posts: 20; illustration modes: 0 screenshot, 20 generated (labels on every page)
+- mount diag: GET /artifacts/writing/internet-archaeology-blog/site without trailing slash -> HTTP 301 (a conforming server 301-redirects to the slash form; a rewriting server that does not is what breaks page-relative refs)
+- mode A ok: 31 internal refs answered 200 under /artifacts/writing/internet-archaeology-blog/site/ (default page-relative mode)
+- mode B ok: 31 prefix-absolute internal refs answered 200 under /site/ (path_prefix mode); rss links = base_url + prefix
+- mount test method: stdlib http.server on 127.0.0.1 ephemeral port, browser-like GETs (redirects followed), every internal href/src fetched; mode A rooted at the workspace root, mode B at a temp root with path_prefix=/site/
+- binary asset size report: no screenshot binaries stored
+- full per-check listing printed to stdout; this record carries section outcomes, methods, and all failures
+
+### Run 2026-08-29 19:36:38
+
+- mode: verify -- 393 checks, ALL PASS
+- posts: 20; illustration modes: 0 screenshot, 20 generated (labels on every page)
+- mount diag: GET /artifacts/writing/internet-archaeology-blog/site without trailing slash -> HTTP 301 (a conforming server 301-redirects to the slash form; a rewriting server that does not is what breaks page-relative refs)
+- mode A ok: 31 internal refs answered 200 under /artifacts/writing/internet-archaeology-blog/site/ (default page-relative mode)
+- mode B ok: 31 prefix-absolute internal refs answered 200 under /site/ (path_prefix mode); rss links = base_url + prefix
+- mount test method: stdlib http.server on 127.0.0.1 ephemeral port, browser-like GETs (redirects followed), every internal href/src fetched; mode A rooted at the workspace root, mode B at a temp root with path_prefix=/site/
+- binary asset size report: no screenshot binaries stored
+- full per-check listing printed to stdout; this record carries section outcomes, methods, and all failures
+
+### Run 2026-08-29 19:36:40
+
+- mode: verify -- 393 checks, ALL PASS
+- posts: 20; illustration modes: 0 screenshot, 20 generated (labels on every page)
+- mount diag: GET /artifacts/writing/internet-archaeology-blog/site without trailing slash -> HTTP 301 (a conforming server 301-redirects to the slash form; a rewriting server that does not is what breaks page-relative refs)
+- mode A ok: 31 internal refs answered 200 under /artifacts/writing/internet-archaeology-blog/site/ (default page-relative mode)
+- mode B ok: 31 prefix-absolute internal refs answered 200 under /site/ (path_prefix mode); rss links = base_url + prefix
+- mount test method: stdlib http.server on 127.0.0.1 ephemeral port, browser-like GETs (redirects followed), every internal href/src fetched; mode A rooted at the workspace root, mode B at a temp root with path_prefix=/site/
+- binary asset size report: no screenshot binaries stored
+- full per-check listing printed to stdout; this record carries section outcomes, methods, and all failures
+
+### Run 2026-08-29 19:37:34
+
+- mode: offline unit tests (blog-screenshot-renderer) -- 24 tests, OK
+- python3 -m unittest discover -s tests: url construction, cdx params, payload
+-   guards (magic/dimensions/floor), browser detection (PATH probe, CHROME_BIN
+-   override + broken-override), additive+idempotent front matter, no-browser
+-   degradation, never-clobber, RESULT-condensation grouping, scratch-build
+-   consistency with a synthetic png, and two real local renders with this
+-   box chromium (gazette index over loopback -> valid 1024x640 png above the
+-   floor; closed loopback port -> browser error page rejected by the guards)
+

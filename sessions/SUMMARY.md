@@ -1,6 +1,6 @@
 # Workspace recent summary
 
-> Last updated: 2026-08-29 10:55 by Eve
+> Last updated: 2026-08-29 11:40 by Eve
 > Window: last 7 days · full history in sessions/archive/
 
 ## Active Goal snapshot (≤ 30 lines per Goal, only current state + next step)
@@ -17,6 +17,7 @@
 
 | Date       | Task                                  | Result  | Key output                                                       |
 | ---------- | ------------------------------------- | ------- | ---------------------------------------------------------------- |
+| 2026-08-29 | blog-screenshot-renderer (goal: operate-internet-archaeology-blog) | done | render-don't-fetch (dead endpoint removed, hardened CDX, headless-browser screenshots, PNG guards, 24 tests, 393 checks); operator laptop run pending; see `2026-08-29-114008-operate-internet-archaeology-blog.md` |
 | 2026-08-29 | blog-screenshots-and-paths (goal: operate-internet-archaeology-blog) | done | --fetch-screenshots capability (degraded here, archive unreachable, zero fabrication), path_prefix + mounted-subpath verify, 392 checks; see `2026-08-29-104920-operate-internet-archaeology-blog.md` |
 | 2026-08-29 | (git ops, no Task)                    | done | Task output committed and pushed at operator instruction (continuation of the recorded git-ops pattern); same detail file |
 | 2026-08-29 | (git ops, no Task)                    | done | commit 4d8276d + push to github.com/litecrew-ai/litecrew-workspace-showcase via SoraKlein key at operator instruction; see `2026-08-29-100422-workspace-git-ops.md` |

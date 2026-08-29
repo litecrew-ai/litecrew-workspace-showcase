@@ -65,17 +65,20 @@ contemporary editorial.
   reports ("use real screenshots instead of fake svgs"; "style missing when
   I mount the site as relative path"). Two halves:
   *(a) Illustration truthfulness.* A plate is either a **screenshot** --
-  bytes actually fetched from the Wayback Machine for the subject's real
-  canonical URL, with snapshot timestamp and fetch date printed on the
-  plate (label: "screenshot: Wayback Machine, snapshot <ts>, fetched
-  <date>") and recorded in front matter plus the PROVENANCE box (new
-  "Illustration" row) -- or **generated memorial art** (the existing
+  pixels a real headless browser rendered from the subject's real archived
+  page (`https://web.archive.org/web/<ts>/<canonical-url>`; the former
+  `web.archive.org/screenshot/` endpoint is dead and was removed in Task
+  `blog-screenshot-renderer`), with snapshot timestamp and fetch date
+  printed on the plate (label: "screenshot: Wayback Machine, snapshot <ts>,
+  fetched <date>") and recorded in front matter plus the PROVENANCE box
+  (the "Illustration" row, and a "Rendered from" row naming the playback
+  URL that was rendered) -- or **generated memorial art** (the existing
   procedural SVG, now labeled as such in the figcaption). No middle state:
-  an unreachable archive degrades the post to the generated plate, labeled;
-  a missing binary degrades the same way at render time, so the label can
-  never lie. The screenshot image mounts on the same dark mat as the SVGs
-  (`.hero-mount img`, `.card-art img`): evidence and memorial share one
-  frame, distinguished only by the label.
+  an unreachable archive or a missing browser degrades the post to the
+  generated plate, labeled; a missing binary degrades the same way at
+  render time, so the label can never lie. The screenshot image mounts on
+  the same dark mat as the SVGs (`.hero-mount img`, `.card-art img`):
+  evidence and memorial share one frame, distinguished only by the label.
   *(b) Mount-path robustness.* Internal URLs are emitted through one
   resolver. Default (`path_prefix: ""`) keeps page-relative refs for
   `file://` rendering; a configured prefix (`"/site/"`) emits prefix-

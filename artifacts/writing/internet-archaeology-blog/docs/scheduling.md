@@ -17,13 +17,21 @@ Notes:
 - `run.py` never fails hard on API outages; it degrades to the seed corpus
   and records the mode in `RESULT.md`. Non-zero exit only means the
   `--verify`-style checks found a real problem; cron mail will tell you.
-- The `--fetch-screenshots` line needs egress to `web.archive.org`. From a
-  network where the archive is unreachable it simply records one failed
-  attempt per subject and leaves every post on the honestly labeled
-  generated plate; where it works, fetched screenshots are stored under
+- The `--fetch-screenshots` line needs two things on the host: egress to
+  `web.archive.org` and a Chrome/Chromium-class browser binary (located via
+  `$CHROME_BIN`, else a PATH probe of the common names, else the macOS app
+  bundles -- see the artifact README). It renders each subject's archived
+  page (`https://web.archive.org/web/<ts>/<url>`) with that browser; the
+  former `web.archive.org/screenshot/` endpoint is dead and no longer
+  called. From a network where the archive is unreachable it records the
+  failure per subject and leaves every post on the honestly labeled
+  generated plate; where it works, the rendered PNGs are stored under
   `assets/screenshots/` (never clobbered) and the next rebuild mounts them
   with a provenance label. Delete `assets/screenshots/<slug>.<ext>` to
-  force a refetch of one subject.
+  force a refetch of one subject. Budget ~25-45 minutes for 20 subjects:
+  the CDX lookup is allowed 25s plus one retry per subject, and slow
+  repeated failures trip a circuit breaker that skips straight to
+  Wayback's nearest-capture form.
 - Steady state: draft one subject per run (the default). Bump with
   `--posts N` only when you plan editorial passes for N posts.
 
@@ -57,16 +65,33 @@ jobs:
         working-directory: artifacts/writing/internet-archaeology-blog
         run: python3 run.py --posts 1
 
-      - name: Fetch real screenshots (best effort)
+      - name: Fetch real screenshots (render archived pages, best effort)
         working-directory: artifacts/writing/internet-archaeology-blog
+        env:
+          # ubuntu-latest runners ship google-chrome preinstalled at
+          # /usr/bin/google-chrome (also on PATH, so the probe would find
+          # it; CHROME_BIN pins it explicitly and documents the dependency).
+          CHROME_BIN: /usr/bin/google-chrome
         run: python3 run.py --fetch-screenshots || true
         # GitHub-hosted runners have egress to web.archive.org, so this is
-        # where real screenshot plates come from. It never fails the
-        # workflow: per-subject failures degrade to the labeled generated
-        # plate and are recorded in RESULT.md. Every stored binary is
+        # where real screenshot plates come from: the step resolves each
+        # subject's snapshot via the Wayback CDX API (25s timeout + retry)
+        # and renders https://web.archive.org/web/<ts>/<url> with the
+        # runner's Chrome in headless mode -- no packages installed, the
+        # browser is invoked as a subprocess. It never fails the workflow:
+        # per-subject failures degrade to the labeled generated plate and
+        # are recorded in RESULT.md. Budget ~25-45 min for 20 subjects; the
+        # default job timeout (360 min) covers it. Every stored binary is
         # size-reported there and by --verify; binaries are exempt from the
         # 100KB text-file gate by design (png/jpg under
         # assets/screenshots/ and site/assets/ only).
+
+      - name: Offline unit tests (screenshot stage)
+        working-directory: artifacts/writing/internet-archaeology-blog
+        run: python3 -m unittest discover -s tests -v
+        # URL construction, payload guards, browser detection, front-matter
+        # editor, scratch-build consistency, plus local loopback renders
+        # when a browser is present (CHROME_BIN carries over from above).
 
       - name: Verify the built site
         working-directory: artifacts/writing/internet-archaeology-blog

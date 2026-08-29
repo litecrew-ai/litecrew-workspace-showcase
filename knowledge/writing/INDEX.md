@@ -6,8 +6,8 @@
 
 | slug                                 | One-line purpose                                        | Status   |
 | ------------------------------------ | ------------------------------------------------------- | -------- |
-| `dead-web-source-catalog.md`         | Keyless APIs for dead-web research and their reachability | active |
-| `post-generation-pipeline.md`        | Deterministic discovery-to-post pipeline recipe with editorial gate, design/template layer, editorial-batch-at-scale practice, truthful image plates, and subpath-mount robustness | active |
+| `dead-web-source-catalog.md`         | Keyless APIs for dead-web research, their reachability, and the proven-dead Wayback screenshot endpoint | active |
+| `post-generation-pipeline.md`        | Deterministic discovery-to-post pipeline recipe with editorial gate, design/template layer, editorial-batch-at-scale practice, truthful image plates (render-don't-fetch with layered payload guards), and subpath-mount robustness | active |
 
 ## Deprecated / superseded
 

@@ -3,7 +3,7 @@ subject: writing
 slug: post-generation-pipeline
 tags: [content-pipeline, python-stdlib, static-site, deterministic-generation, editorial-split]
 related_goals: [internet-archaeology-blog]
-related_tasks: [blog-v0-pipeline, blog-design-overhaul, blog-publish-all]
+related_tasks: [blog-v0-pipeline, blog-design-overhaul, blog-publish-all, blog-screenshots-and-paths, blog-screenshot-renderer]
 related_knowledge: [writing/dead-web-source-catalog.md]
 last_verified_date: 2026-08-29
 status: active
@@ -154,41 +154,92 @@ real fabrication pressure. What held it, as reusable practice:
    not weaken never-clobber: that rule protects files from automation
    during runs, and the facts persist in the fact sheets regardless.
 
-### Truthful images: real screenshots versus generated art (from the screenshots-and-paths run)
+### Truthful images: real screenshots versus generated art (from the screenshots-and-paths run, strategy fixed in blog-screenshot-renderer)
 
 When a content product shows pictures "of" a subject, the truthfulness law
 needs an image-mode equivalent. What generalized:
 
-1. **Two modes, no middle state.** A plate is either a *screenshot* (bytes
-   actually fetched from the archive for the subject's real canonical URL)
-   or *generated* (the product's own procedural art). Both carry a visible
+1. **Two modes, no middle state.** A plate is either a *screenshot* (pixels
+   a real browser rendered from the subject's real archived page) or
+   *generated* (the product's own procedural art). Both carry a visible
    label; the mode lives in front matter (`illustration: screenshot |
-   generated`) plus provenance fields (source URL, snapshot timestamp, fetch
-   date) and renders into the page's provenance box. Anything else -- a
-   mockup, a stand-in, a "representative" image -- is fabrication.
-2. **Sniff the payload before storing.** An screenshot endpoint behind an
-   outage returns HTML error pages with HTTP 200. Validate magic bytes
-   (PNG/JPEG signatures) before writing the binary; store only real images.
-   This is the image twin of "assert data renders, not that boxes exist".
-3. **Degrade per subject, log every attempt.** Each subject fetches
-   independently (CDX timestamp lookup, then the screenshot) with short
-   timeouts; failure degrades that subject to generated art, labeled. The
-   run record lists every attempt (HTTP code, bytes, error string) so a
-   future operator knows exactly what was tried.
-4. **Never-clobber binaries; refetch is explicit.** Stored screenshot files
+   generated`) plus provenance fields (subject URL, archived playback URL,
+   snapshot timestamp, fetch date) and renders into the page's provenance
+   box. Anything else -- a mockup, a stand-in, a "representative" image --
+   is fabrication.
+2. **Verify the endpoint's contract before designing around it -- and get
+   evidence from a reachable network.** The documented Wayback screenshot
+   service (`web.archive.org/screenshot/<url>`) turned out to be dead: an
+   operator run from a network with archive egress got HTTP 404 with an HTML
+   error page for all 20 subjects. From inside a blocked network, "dead" and
+   "blocked" look identical (both fail at the connection layer), so the
+   design error was only provable once someone with egress ran it. When an
+   integration is untestable from your box, ship the honest degraded path
+   AND an operator-runnable probe, then believe the probe's output over the
+   documentation.
+3. **Render, don't fetch.** The robust way to picture an archived page is
+   the playback URL itself: resolve a timestamp (CDX), then have a real
+   browser screenshot `https://web.archive.org/web/<ts>/<original-url>`.
+   No image API in the middle to die. The browser is an external binary
+   invoked with `subprocess` (stdlib only): locate it via `$CHROME_BIN`,
+   else a PATH probe of common names, else macOS app bundles; run it once
+   per subject with `--headless=new --screenshot=<tmp> --window-size=...,
+   --virtual-time-budget=... --hide-scrollbars --disable-gpu
+   --user-data-dir=<throwaway profile>`; give it a wall-clock budget and
+   kill the **process group** on expiry.
+4. **Hanging networks and failing networks produce different forgeries.**
+   Measured with a real chromium: pointed at an unroutable host, the
+   browser *never exits and writes no file* (killed at 100s) -- your own
+   subprocess timeout is the only bound. Pointed at a fast-failing target
+   (closed port, NXDOMAIN), it *writes a genuine PNG of its own error
+   page* (21768 bytes at 1024x640) that passes any magic-byte check. So
+   payload sniffing alone cannot keep a browser error page out of the
+   product. Layer the guards: (a) HTTP 200 pre-check of the exact URL you
+   are about to render, plus a content check that the body is a playback
+   page; (b) PNG magic bytes; (c) exact window dimensions; (d) a size floor
+   **calibrated locally** by rendering a blank page (3301 bytes), the error
+   page (21768), and a real content page (67398) -- the floor sits just
+   above the error page. Every rejected render degrades that subject with
+   the reason logged.
+5. **Resolve the browser once; degrade once.** Discovering the binary is a
+   per-run step, not a per-subject one. No browser found means zero network
+   work: skip every subject with one actionable message ("set CHROME_BIN or
+   install Chrome/Chromium"), not twenty identical apologies. A broken
+   CHROME_BIN must be reported as such, never silently fallen back.
+6. **Budget for the slow index.** CDX answered only 5 of 20 lookups inside
+   5s from a reachable network; the working budget is a 25s timeout, one
+   retry, a circuit breaker that skips remaining lookups after ~4
+   consecutive transport failures (falling back to Wayback's
+   nearest-capture form), and ~2s between subjects to avoid the 503 class.
+7. **Degrade per subject, log every attempt.** Each subject resolves,
+   pre-checks, and renders independently; failure degrades that subject to
+   generated art, labeled. The run record lists every attempt (HTTP code,
+   bytes, error string) so a future operator knows exactly what was tried.
+   When the run log nears its size gate, keep per-subject lines on stdout
+   and append a condensed outcome summary instead.
+8. **Never-clobber binaries; refetch is explicit.** Stored screenshot files
    are source assets the builder copies into the build (byte-identical,
    like the stylesheet), so clean-state rebuilds stay deterministic.
-   Re-fetching means deleting the file first.
-5. **Additive-only front matter with a body hash post-condition.** When
+   Re-rendering means deleting the file first.
+9. **Additive-only front matter with a body hash post-condition.** When
    automation must add metadata to frozen editorial files, edit only the
    front-matter block, splice before the closing delimiter, and sha256 the
    body before/after as a hard assertion (the fetch mode returns non-zero
    on mismatch). This is the mechanical guarantee behind "post bodies stay
    frozen".
-6. **Gate binaries explicitly.** A "no text file over N KB" gate will
-   either falsely flag image binaries or silently skip them. Split it:
-   text files over N KB fail; png/jpg under an assets path are allowed,
-   individually size-reported, and any other binary anywhere fails.
+10. **Gate binaries explicitly.** A "no text file over N KB" gate will
+    either falsely flag image binaries or silently skip them. Split it:
+    text files over N KB fail; png/jpg under an assets path are allowed,
+    individually size-reported, and any other binary anywhere fails.
+11. **Test the untestable path without pretending.** Where the real archive
+    is unreachable, the machinery is still testable: unit-test URL
+    construction, payload guards, browser detection (restricted PATH /
+    broken CHROME_BIN), and the additive front-matter editor offline;
+    verify the build consistency with a synthetic PNG in a scratch tree;
+    and, when any chromium exists locally, render a loopback page and a
+    deliberately closed port through the real subprocess path. The
+    environment-dependent tests skipUnless a browser exists, so the suite
+    is green on machines without one.
 
 ### Subpath mount robustness (from the same run)
 
@@ -275,8 +326,11 @@ deterministic scaffolding is honest about being scaffolding.
 - [ ] Reconcile ledger against seed corpus and posts by set equality before
       mutating any of them.
 - [ ] For image plates: declare mode in front matter, label it on the page,
-      sniff payloads before storing, log every fetch attempt, and hash-check
-      bodies when editing front matter of frozen files.
+      render the real page rather than trusting an image API, layer payload
+      guards (http pre-check + playback-content check + magic bytes + exact
+      dimensions + calibrated size floor), resolve the browser once and
+      degrade once when absent, log every attempt, and hash-check bodies
+      when editing front matter of frozen files.
 - [ ] For mounts: one URL resolver for all internal refs; page-relative
       default + config-driven prefix mode; a mounted-subpath HTTP browse
       test in verify for both modes.
@@ -294,3 +348,4 @@ deterministic scaffolding is honest about being scaffolding.
 | 2026-08-29 | Merged presentation-layer section (design brief workflow, stylesheet-as-build-product, falsy-list parser trap, render-regression guards) | tasks/blog-design-overhaul.md |
 | 2026-08-29 | Merged editorial-batch-at-scale section (number auditing, thin-sheet honesty, evidence re-probe, lead-plus-register index, ledger-drift diagnosis, scaffold retirement) | tasks/blog-publish-all.md |
 | 2026-08-29 | Merged truthful-images section (two-mode labeling, magic-byte sniffing, per-subject degradation, additive front matter with body-hash post-condition, binary gate split) and subpath-mount section (reproduce-first diagnosis, single URL resolver with path_prefix, mounted-subpath HTTP test in verify) | tasks/blog-screenshots-and-paths.md |
+| 2026-08-29 | Truthful-images section rewritten for the render-don't-fetch strategy: dead-endpoint evidence from a reachable network, subprocess browser invocation with process-group timeout, hang-vs-fast-fail forgery asymmetry and the layered payload guards with locally calibrated size floor, resolve-browser-once degradation, CDX latency budget with circuit breaker, and testing the untestable path without pretending | tasks/blog-screenshot-renderer.md |

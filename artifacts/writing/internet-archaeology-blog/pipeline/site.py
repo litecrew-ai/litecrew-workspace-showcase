@@ -414,6 +414,8 @@ def _provenance_html(m: dict, exhibit_no: int, mode: str) -> str:
     ]
     if mode == "screenshot" and m.get("screenshot_url"):
         rows.append(("Screenshot of", str(m["screenshot_url"])))
+    if mode == "screenshot" and m.get("screenshot_archived_url"):
+        rows.append(("Rendered from", str(m["screenshot_archived_url"])))
     rows += [
         ("Generated", m.get("generated", "not recorded")),
         ("Generator", m.get("generator", "not recorded")),

@@ -6,9 +6,10 @@ Usage:
   python3 run.py --posts 3      draft up to 3 new subjects this run
   python3 run.py --rebuild-only just rebuild the static site
   python3 run.py --fetch-screenshots
-                                fetch real Wayback screenshots per subject
-                                (needs egress to web.archive.org; every
-                                attempt is logged; degrades honestly)
+                                render real archived pages per subject with
+                                a headless browser (CHROME_BIN or a PATH
+                                probe; needs egress to web.archive.org;
+                                every attempt is logged; degrades honestly)
   python3 run.py --verify       verify the built site (links, SVG, sizes,
                                 glyphs, mounted-subpath serving)
 
@@ -30,6 +31,7 @@ import re
 import socketserver
 import sys
 import threading
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, date
@@ -53,6 +55,10 @@ CSS_SRC = ROOT / "src" / "styles.css"
 SCREENSHOTS = ROOT / "assets" / "screenshots"
 
 SIZE_LIMIT = 100 * 1024  # publication gate: no text file over 100KB
+# When the run log is this close to the gate, per-subject fetch lines stay on
+# stdout and RESULT.md gets a condensed outcome summary instead (rotation of
+# historical sections is an operator/Eve decision, recorded in the Task log).
+RESULT_CONDENSE_THRESHOLD = 88 * 1024
 
 
 # ---------------------------------------------------------------------------
@@ -144,13 +150,45 @@ def rebuild_only() -> None:
 # Screenshot fetch (operator-runnable; needs egress to web.archive.org)
 # ---------------------------------------------------------------------------
 
-def fetch_screenshots() -> int:
-    """Attempt a real archived screenshot for every published subject.
+def _outcome_class(result: dict) -> str:
+    """A short, human-readable failure class for the condensed run record.
 
-    Every attempt (CDX lookup + screenshot fetch, HTTP codes, byte counts,
-    error strings) lands in RESULT.md. Failures degrade the subject to the
-    generated plate, honestly labeled -- never a stand-in image. Post bodies
-    are hash-checked before/after: only front-matter fields may change.
+    CDX notes carry the per-subject URL ("cdx http://x: cdx: timeout ..."),
+    which would make every subject its own group; the URL is dropped so the
+    log groups by what actually happened.
+    """
+    if result.get("stored"):
+        return "stored"
+    first = next((n for n in result["note"]
+                  if n.startswith(("cdx ", "archived page", "skipped",
+                                   "render:", "rejected"))), "other")
+    if first.startswith("cdx ") and first.count(":") >= 2:
+        return first.split(":", 2)[-1].strip()[:70]
+    return first.split(":")[0][:70]
+
+
+def condense_outcomes(results: list[dict]) -> list[str]:
+    """Group per-subject outcomes into class -> slug-list log lines."""
+    groups: dict[str, list[str]] = {}
+    for r in results:
+        groups.setdefault(_outcome_class(r), []).append(r["slug"])
+    return [f"  {key}: {len(groups[key])} subject(s) "
+            f"[{', '.join(groups[key])[:400]}]" for key in sorted(groups)]
+
+
+def fetch_screenshots() -> int:
+    """Render a real archived page per published subject, headlessly.
+
+    Strategy is render-don't-fetch: the former web.archive.org/screenshot
+    endpoint is dead (operator run 2026-08-29: HTTP 404 + an HTML error page
+    for all 20 subjects). Each subject resolves a snapshot via hardened CDX
+    (25s timeout, one retry, 200-preference, circuit breaker), pre-checks the
+    playback URL, then renders it with a browser subprocess located through
+    $CHROME_BIN or a PATH probe. Every attempt lands in RESULT.md; failures
+    degrade the subject to the labeled generated plate. When no browser
+    binary exists the run degrades once, with the actionable message, and
+    touches no network at all. Post bodies are hash-checked before/after:
+    only front-matter fields may change.
     """
     subjects = screenshots.load_subjects(SEED)
     posts = sorted(POSTS.glob("*.md"))
@@ -160,22 +198,54 @@ def fetch_screenshots() -> int:
     fetch_date = date.today().isoformat()
     before = {p.name: screenshots.body_sha256(p) for p in posts}
 
+    browser, browser_note = screenshots.find_browser()
+    print(browser_note)
+    log = [
+        "mode: fetch-screenshots (render strategy: resolve via CDX, then "
+        "screenshot https://web.archive.org/web/<ts>/<url> with a headless "
+        "browser; the former /screenshot/ endpoint returned 404 html for "
+        "every subject in the operator run of 2026-08-29 and is no longer "
+        "called)",
+        browser_note,
+    ]
+
+    cdx_state: dict = {"fails": 0, "tripped": False}
     results = []
-    for p in posts:
+    did_work = False
+    for i, p in enumerate(posts):
+        if i and did_work:
+            time.sleep(screenshots.INTER_SUBJECT_DELAY)
         subj = subjects.get(p.stem, {"slug": p.stem, "name": p.stem})
-        results.append(screenshots.attempt_subject(p, subj, SCREENSHOTS, fetch_date))
+        r, worked = screenshots.attempt_subject(
+            p, subj, SCREENSHOTS, fetch_date, browser=browser, cdx_state=cdx_state)
+        did_work = did_work or worked
+        results.append(r)
+        print(screenshots.result_line(r))
 
     bodies_ok = all(screenshots.body_sha256(p) == before[p.name] for p in posts)
     stored = [r for r in results if r.get("stored")]
-    log = [
-        "mode: fetch-screenshots",
+    log.append(
         f"subjects attempted: {len(results)}; screenshots stored: {len(stored)}; "
-        f"degraded to generated art: {len(results) - len(stored)}",
+        f"degraded to generated art: {len(results) - len(stored)}"
+    )
+    log.append(
         f"post bodies byte-identical after front-matter updates (sha256): "
-        f"{'yes' if bodies_ok else 'MISMATCH - INVESTIGATE'}",
-    ]
-    for r in results:
-        log.append(screenshots.result_line(r))
+        f"{'yes' if bodies_ok else 'MISMATCH - INVESTIGATE'}"
+    )
+    if not browser:
+        # No browser: one actionable message above; per-subject detail stays
+        # on stdout so the run record degrades once, not twenty times.
+        log.append("skipped (no browser binary): " + ", ".join(r["slug"] for r in results))
+    elif RESULT.exists() and RESULT.stat().st_size > RESULT_CONDENSE_THRESHOLD:
+        log.append(
+            f"RESULT.md near the size gate ({RESULT.stat().st_size / 1024:.1f}KB of "
+            f"{SIZE_LIMIT // 1024}KB); per-subject lines kept on stdout only; "
+            "condensed outcomes:"
+        )
+        log.extend(condense_outcomes(results))
+    else:
+        for r in results:
+            log.append(screenshots.result_line(r))
     if stored:
         log.append("binary size report:")
         for r in stored:
@@ -278,6 +348,13 @@ def verify() -> int:
                 if m.get("screenshot_timestamp"):
                     check(f"{m['slug']}: snapshot timestamp on the plate",
                           str(m["screenshot_timestamp"]) in txt)
+                if m.get("screenshot_archived_url"):
+                    check(f"{m['slug']}: archived page url is a playback form",
+                          str(m["screenshot_archived_url"]).startswith(
+                              "https://web.archive.org/web/"),
+                          str(m["screenshot_archived_url"])[:60])
+                    check(f"{m['slug']}: archived page url on the plate",
+                          str(m["screenshot_archived_url"]) in txt)
                 check(f"{m['slug']}: fetch date on the plate",
                       str(m.get("screenshot_fetched", "")) in txt)
                 check(f"{m['slug']}: screenshot binary copied into site/assets",
@@ -403,6 +480,12 @@ def verify() -> int:
     scripted = [str(h.relative_to(SITE)) for h in SITE.rglob("*.html")
                 if "<script" in h.read_text(encoding="utf-8")]
     check("no scripts in built pages", not scripted, "; ".join(scripted[:5]))
+
+    # The dead screenshot endpoint must never resurface as a live dependency.
+    dead_refs = [str(h.relative_to(SITE)) for h in SITE.rglob("*.html")
+                 if "web.archive.org/screenshot" in h.read_text(encoding="utf-8")]
+    check("dead /screenshot/ endpoint not referenced by built pages",
+          not dead_refs, "; ".join(dead_refs[:3]))
 
     # RSS feed: parses as XML and lists every published post.
     rss_ok, rss_detail = _rss_check(metas)
@@ -793,8 +876,9 @@ def main() -> int:
     ap.add_argument("--rebuild-only", action="store_true",
                     help="skip discovery; just rebuild the site")
     ap.add_argument("--fetch-screenshots", action="store_true",
-                    help="fetch real Wayback Machine screenshots per subject "
-                         "(web.archive.org egress required); every attempt "
+                    help="render real archived pages per subject with a "
+                         "headless browser (CHROME_BIN or PATH probe; "
+                         "web.archive.org egress required); every attempt "
                          "logged; failures degrade to labeled generated art")
     ap.add_argument("--verify", action="store_true",
                     help="verify the built site and gate compliance")
