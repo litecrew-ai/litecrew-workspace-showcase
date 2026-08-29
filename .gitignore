@@ -1,0 +1,32 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.python-version
+uv.lock
+
+# Virtual environments
+.venv
+
+# Artifacts: unlike the empty skeleton, this showcase repo tracks artifacts/
+# as evidence of real work. Size discipline is enforced by the publication
+# gate (see PUBLICATION.md): no text file over 100KB.
+
+# Secrets: API tokens, credentials
+config/*.secret.json
+config/*.token
+.env
+.env.*
+node_modules
+
+# Local AI-CLI state (settings, caches) is per-developer and never shipped.
+# The .claude/agents mount ships with the imported tree and must stay tracked;
+# the whitelist keeps it (and a future skills mount) loadable after clone,
+# while everything else under .claude/ stays per-developer.
+.claude/*
+!.claude/agents
+!.claude/skills
+.agents/
