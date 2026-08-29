@@ -1,6 +1,6 @@
 # Workspace recent summary
 
-> Last updated: 2026-08-29 08:55 by Eve
+> Last updated: 2026-08-29 10:04 by Eve
 > Window: last 7 days · full history in sessions/archive/
 
 ## Active Goal snapshot (≤ 30 lines per Goal, only current state + next step)
@@ -16,6 +16,7 @@
 
 | Date       | Task                                  | Result  | Key output                                                       |
 | ---------- | ------------------------------------- | ------- | ---------------------------------------------------------------- |
+| 2026-08-29 | (git ops, no Task)                    | done | commit 4d8276d + push to github.com/litecrew-ai/litecrew-workspace-showcase via SoraKlein key at operator instruction; see `2026-08-29-100422-workspace-git-ops.md` |
 | 2026-08-29 | blog-publish-all (goal: internet-archaeology-blog) | done | all 20 subjects published, index D10 re-tune, 286 checks PASS, Goal completed; see `2026-08-29-085527-operate-internet-archaeology-blog.md` |
 | 2026-08-29 | blog-design-overhaul (goal: internet-archaeology-blog) | done | museum-style redesign, RSS + categories, verifier 63 checks, v0 SOURCES bug fixed; see `2026-08-29-081351-internet-archaeology-blog.md` |
 | 2026-08-29 | blog-v0-pipeline (goal: internet-archaeology-blog) | done | v0 pipeline + The Dead Web Gazette, 3 published posts; see `2026-08-29-073711-internet-archaeology-blog.md` |
