@@ -33,5 +33,12 @@ the archaeology preview link https://litecrew.ai/cases/internet-archaeology/.
 ## Follow-ups
 
 - Commit+push follows per the standing submit-when-finished instruction.
+- Same day, operator follow-up: "add screenshot" with /tmp/internet-archaeology.png
+  (2880x1554 PNG, 481KB, operator-supplied). Copied to
+  `docs/assets/internet-archaeology.png` (the established README-images directory;
+  consistent in size with the skeleton's grandfathered images) and embedded in the
+  README's case section directly under the preview link. Size note on the record:
+  over the 100KB text-gate threshold, but a binary in the docs/assets convention;
+  operator's gate call.
 - Next productive activation under Goal `operate-internet-archaeology-blog`:
   cadence decision (SC1) or discovery enrichment (SC2).

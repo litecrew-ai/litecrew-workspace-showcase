@@ -20,6 +20,8 @@ once had 3 million users. Today, no one remembers it."*
 
 **Preview the site: <https://litecrew.ai/cases/internet-archaeology/>**
 
+![The Dead Web Gazette -- the internet archaeology blog built and operated by this workspace](docs/assets/internet-archaeology.png)
+
 Built and operated entirely through the workspace, across six Tasks and one hired
 specialist agent:
 
